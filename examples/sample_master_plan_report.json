@@ -1,0 +1,239 @@
+{
+  "field_summary": {
+    "name": "demo-shamba",
+    "area_ha": 4.85,
+    "perimeter_m": 884.0
+  },
+  "environmental": {
+    "ph_water": 7.6,
+    "clay_percentage": 22.0,
+    "sand_percentage": 61.0,
+    "silt_percentage": 17.0,
+    "soil_organic_carbon": 8.5,
+    "nitrogen_content": 0.9,
+    "cec_mmolc_kg": 14.0,
+    "avg_annual_rainfall_mm": 320.0,
+    "avg_temp_celsius": 27.8,
+    "annual_et0_mm": 1650.0,
+    "coldest_month_min_temp_c": 21.0
+  },
+  "ves_interpretations": [
+    {
+      "lon": 45.3184,
+      "lat": 2.0463,
+      "aquifer_quality_score": 0.9167,
+      "estimated_water_table_depth_m": 30.0,
+      "interpretation_notes": [
+        "saturated section 50.0 m, mean band score 1.00, thickness factor 0.83"
+      ]
+    },
+    {
+      "lon": 45.3176,
+      "lat": 2.0458,
+      "aquifer_quality_score": 0.5419,
+      "estimated_water_table_depth_m": null,
+      "interpretation_notes": [
+        "no clear water table signature; score damped x0.6 for uncertainty",
+        "saturated section 80.0 m, mean band score 0.90, thickness factor 1.00"
+      ]
+    },
+    {
+      "lon": 45.3172,
+      "lat": 2.0466,
+      "aquifer_quality_score": 0.03,
+      "estimated_water_table_depth_m": null,
+      "interpretation_notes": [
+        "no clear water table signature; score damped x0.6 for uncertainty",
+        "saturated section 80.0 m, mean band score 0.05, thickness factor 1.00"
+      ]
+    }
+  ],
+  "well_siting": {
+    "optimal_well_point": {
+      "type": "Point",
+      "coordinates": [
+        45.3183978,
+        2.0462873
+      ]
+    },
+    "recommended_drilling_depth_m": 45.0,
+    "composite_score": 0.9165,
+    "factor_weights_used": {
+      "ves": 1.0
+    },
+    "candidate_sites": [
+      {
+        "lon": 45.3183978,
+        "lat": 2.0462873,
+        "composite_score": 0.9165,
+        "factor_scores": {
+          "ves": 0.9165
+        }
+      },
+      {
+        "lon": 45.3184372,
+        "lat": 2.0464061,
+        "composite_score": 0.9054,
+        "factor_scores": {
+          "ves": 0.9054
+        }
+      },
+      {
+        "lon": 45.3185159,
+        "lat": 2.0462477,
+        "composite_score": 0.9035,
+        "factor_scores": {
+          "ves": 0.9035
+        }
+      },
+      {
+        "lon": 45.3182796,
+        "lat": 2.0463269,
+        "composite_score": 0.8987,
+        "factor_scores": {
+          "ves": 0.8987
+        }
+      },
+      {
+        "lon": 45.3183584,
+        "lat": 2.0461684,
+        "composite_score": 0.8966,
+        "factor_scores": {
+          "ves": 0.8966
+        }
+      }
+    ],
+    "coverage": {
+      "ves_surveys_used": 3,
+      "terrain_factors_available": false,
+      "analysis_grid": {
+        "cells": 2500,
+        "cell_size_m": 4.38,
+        "epsg": 32638
+      }
+    }
+  },
+  "top_crops": [
+    {
+      "crop": "sorghum",
+      "category": "cereal",
+      "score": 100.0,
+      "rating": "highly_suitable",
+      "limiting_factors": [],
+      "notes": [
+        "drought-escape short-duration varieties below 350 mm effective rainfall"
+      ],
+      "fixes_nitrogen": false,
+      "irrigated_default": false
+    },
+    {
+      "crop": "pearl_millet",
+      "category": "cereal",
+      "score": 100.0,
+      "rating": "highly_suitable",
+      "limiting_factors": [],
+      "notes": [
+        "best cereal for sandy soils and <300 mm zones"
+      ],
+      "fixes_nitrogen": false,
+      "irrigated_default": false
+    },
+    {
+      "crop": "cowpea",
+      "category": "legume",
+      "score": 100.0,
+      "rating": "highly_suitable",
+      "limiting_factors": [],
+      "notes": [
+        "N-fixing: responds to P more than N",
+        "dual-purpose grain/fodder"
+      ],
+      "fixes_nitrogen": true,
+      "irrigated_default": false
+    },
+    {
+      "crop": "mung_bean",
+      "category": "legume",
+      "score": 100.0,
+      "rating": "highly_suitable",
+      "limiting_factors": [],
+      "notes": [
+        "short 60-70 day window fits erratic rains"
+      ],
+      "fixes_nitrogen": true,
+      "irrigated_default": false
+    },
+    {
+      "crop": "sesame",
+      "category": "oilseed",
+      "score": 100.0,
+      "rating": "highly_suitable",
+      "limiting_factors": [],
+      "notes": [
+        "waterlogging-intolerant: needs drainage",
+        "high-value export crop"
+      ],
+      "fixes_nitrogen": false,
+      "irrigated_default": false
+    },
+    {
+      "crop": "mango",
+      "category": "perennial_fruit",
+      "score": 100.0,
+      "rating": "highly_suitable",
+      "limiting_factors": [],
+      "notes": [
+        "a dry pre-flowering window improves fruit set",
+        "suits orchard zone of master plan"
+      ],
+      "fixes_nitrogen": false,
+      "irrigated_default": false
+    }
+  ],
+  "soil_amendment_recommendations": [
+    "Low SOC (8.5 g/kg): 5-10 t/ha compost or farmyard manure; retain residues and rotate with legumes."
+  ],
+  "fencing": {
+    "perimeter_m": 884.0,
+    "gates": 3,
+    "line_posts": 200,
+    "strainer_posts": 19,
+    "gate_posts": 6,
+    "total_posts": 225,
+    "wire_rolls": 10,
+    "wire_length_m": 3702.4,
+    "cost_breakdown": {
+      "line_posts": 900.0,
+      "strainer_posts": 228.0,
+      "gate_posts": 72.0,
+      "gates": 255.0,
+      "wire_rolls": 550.0,
+      "labor": 707.2
+    },
+    "total_cost": 2712.2,
+    "assumptions": {
+      "line_post_spacing_m": 4.0,
+      "strainer_interval_m": 60.0,
+      "wire_strands": 4,
+      "wire_roll_length_m": 400.0,
+      "gate_width_m": 3.6,
+      "wastage_fraction": 0.06,
+      "currency": "USD",
+      "corner_count": 4
+    }
+  },
+  "layout_zones_metadata": {
+    "total_area_ha": 4.917,
+    "band_rule_max_area_ha": 10.0,
+    "rotation_degrees": -179.99,
+    "well_pad_carved": true
+  },
+  "layout_zone_names": [
+    "homestead",
+    "orchard",
+    "roads_service",
+    "production",
+    "well_site"
+  ],
+  "zones_count": 5
+}

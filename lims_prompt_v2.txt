@@ -1,0 +1,74 @@
+You are an expert Frontend and Full-Stack Developer specializing in modern React, Tailwind CSS, Lucide icons, and advanced dashboard UX design.
+
+Build a comprehensive, production-ready Laboratory Information Management System (LIMS) dashboard for an agricultural soil testing facility. Incorporate the following distinct modules, financial structures, specific calculation engines, and interactive plant pathology widgets seamlessly into a single-page interactive application using robust local React state.
+
+### DEPLOYMENT & ASSET RULES (strict — override everything else)
+1. SINGLE-PAGE, SINGLE-ORIGIN DELIVERY: The entire LIMS must load and run from the same page and the same HTTP origin as the main software (one self-contained HTML file served at `/lims` inside the existing app — e.g. http://localhost:8000/lims). No separate website, no external rundown.
+2. OFFLINE-SAFE ASSETS — NO EXTERNAL CDN DEPENDENCIES: do NOT rely on runtime internet hosting (unpkg / jsdelivr / cdn.tailwindcss) for React, Recharts, Lucide or Tailwind. Either (a) embed/vendor all required libraries inside the app package so every asset is served same-origin (e.g. /web/vendor/react.min.js), or (b) compile React/Recharts components into a single dependency-free bundle inlined in the HTML. The page must render fully functional even with the internet cable unplugged. Add a tiny console self-check so a missing library shows a visible error box instead of a blank page.
+3. COMPILER SAFETY: if an in-browser JSX transformer is used, restrict JS syntax to what that compiler supports — avoid `??`, `?.`, and any ES2020+ operator; declare the Babel presets explicitly (es2015, es2016, react, stage-2). Prefer no-JSX `React.createElement` or a build-free approach so the page never fails on syntax.
+
+### PAYMENT ENGINE OVERRIDES (strict)
+4. FLEXIBLE AMOUNT INPUT, NOT FIXED TIERS: The "Receive New Payment" form must include a free numeric "Amount Paid (USD)" field where staff can type exactly what the farmer paid — not restricted to fixed tier prices. Selecting a test tier only PRE-FILLS a suggested base amount which remains fully editable.
+5. PARTIAL PAYMENTS & BALANCES: if the typed amount is below the computed Grand Total, record the invoice with status PARTIAL and show the outstanding Balance; if equal or above, mark it PAID. Overpayment must show a positive Change/Credit line. Ledger must display: Base, Typed Amount, Tax, Gateway Fee, Total Due, Balance Owing. Settling a PARTIAL invoice must be possible from a "Settle" action that accepts the typed remainder.
+
+---
+
+### MODULE 1: DYNAMIC BACKGROUND SPECTRUM SELECTOR
+- Create an easily accessible user settings tool (e.g., a top-bar dropdown, dashboard gear menu, or side widget) allowing the user to dynamically shift the dashboard's primary wrapper or background theme.
+- Provide explicit selectable options covering the entire spectrum: Red, Orange, Yellow, Green, Cyan, Blue, Purple, Magenta, and a neutral Dark/Light slate layout.
+- Clicking any color option must smoothly and immediately update the application's background state.
+
+### MODULE 2: CLICKABLE WORK HISTORY & MONTHLY ANALYTICS SIDEBAR
+- Daily Work History Ledger: interactive data table tracking the soil tests processed during the day. Clicking any row must trigger an overlay modal displaying a beautifully styled, official "Soil Analysis Certificate" for that specific sample.
+- Embedded Recommendation Formula inside the certificate:
+  * pH < 5.5 → status "Critically Acidic", recommendation: "Apply 1,200 kg of Agricultural Lime per acre."
+  * pH 5.5–6.2 → status "Mildly Acidic", recommendation: "Apply 500 kg of Maintenance Lime per acre."
+  * pH > 7.5 → status "Alkaline", recommendation: "Apply Agricultural Sulfur to lower pH."
+- Monthly Analytics Sidebar: a distinct panel explicitly labeled "Monthly Work & Lab Analytics" showing Total Samples Tested, Certificates Issued, Average Turnaround Time, plus a visual chart tracking daily lab throughput across the current month.
+
+### MODULE 3: LABORATORY FEES & FINANCIAL ANALYTICS
+- Farmer Invoicing System: a ledger tracking fees charged for various testing tiers (Basic pH Test, Texture + OM Panel, Full Micronutrient Sweep, Heavy Metal Scan) — every tier keeps a suggested price, always overridable by the typed amount (see Payment Engine Overrides).
+- Financial Trends Chart: "Revenue Trends" chart plotting total income collected versus outstanding pending balances.
+
+### MODULE 4: ACTIVE TECHNICAL ENGINEER MANAGEMENT
+- On-Duty Status Tracker: a highly visible header badge with the Full Name and License ID of the Technical Engineer on Duty for the active day.
+- Writable Roster Tool: text inputs allowing administrators to add new engineers to the running roster array.
+- Duty Switcher: dropdown quick-select changing the active on-duty engineer instantly, updating headers and any log associations.
+
+### MODULE 5: TRANSACTION METADATA & REGIONAL PAYMENT GATEWAY MATRIX
+- Expanded Invoice Logs: every transaction captures Client/Farmer Name, Base Charge Amount, Currency (strictly defaulting to "USD"), Payment Method, and Typed Amount Paid.
+- Gateway Integration: the payment selection menu populates exactly with [ZAAD, SAHAL, EDAHAB, CASH, EVCPLUS, BANK, CREDIT CARD].
+- Automated Ledger Calculation Engine:
+  * Government Tax Rate: constant 5% added to Base Price.
+  * Payment Processing Overhead: ZAAD 0.00, SAHAL 0.00, EVCPLUS 0.00, CASH 0.00, EDAHAB 0.5% of base, BANK 1.0% of base, CREDIT CARD 2.5% of base.
+  * Forms and ledger dynamically compute and display Subtotal, Tax, Gateway Fee, Grand Total Charged (USD) AND Typed Amount / Balance (see overrides #4–#5).
+- Interactive Intake Form: "Receive New Payment" appends the record onto the ledger and updates analytical graphs instantly on submission.
+
+### MODULE 6: INTERACTIVE HIERARCHICAL PLANT PATHOLOGY & DIAGNOSTIC WIDGET
+Design a dedicated interactive dashboard block named "Agronomic Disease & Treatment Intelligence System" operating on a step-by-step layout:
+
+Data tree (embed verbatim):
+1. Apple Tree
+   - Fire Blight | Erwinia amylovora (Bacterium) | Prune infected limbs 8–12 inches below damage using tools sanitized with 10% bleach/isopropyl alcohol. Apply copper-based bactericides during early spring bloom.
+   - Apple Scab | Venturia inaequalis (Fungus) | Rake and burn fallen autumn leaves to eliminate overwintering spores. Spray with preventative fungicides (captan or flutriafol) starting at the green-tip growth stage.
+2. Peach Tree
+   - Brown Rot | Monilinia fructicola (Fungus) | Remove and destroy all mummified fallen fruit on orchard floors. Apply preventative fungicides (sulfur or propiconazole) from early bloom through harvest.
+   - Peach Leaf Curl | Taphrina deformans (Fungus) | Apply a single lime-sulfur or copper-based fungicide spray during winter dormancy before buds swell in spring.
+3. Wheat & Coffee Crops
+   - Rust Disease | Puccinia spp. / Hemileia vastatrix (Fungus) | Plant resistant crop cultivars. Spray with triazole or strobilurin-class chemical fungicides immediately at the first sign of pustules.
+   - Damping-Off | Pythium / Rhizoctonia (Soil Fungi) | Avoid overwatering; ensure optimal field drainage. Use fungicide-treated seeds and avoid planting into cold, waterlogged soils.
+4. Tomato & Potato Vegetables
+   - Early Blight | Alternaria solani (Fungus) | Prune lower leaves to maximize airflow and stop splash-transmission. Avoid overhead sprinkler irrigation. Apply chlorothalonil preventatively.
+   - Late Blight | Phytophthora infestans (Water Mold) | Completely destroy and burn infected plants (do not compost). Apply targeted oomycete fungicides (metalaxyl or copper sulfate) during periods of high humidity.
+
+Interaction workflow:
+- Step 1 — Plant Selection: clean grid of clickable category cards (Apple Tree, Peach Tree, Wheat & Coffee Crops, Tomato & Potato Vegetables).
+- Step 2 — clicking a plant immediately opens a dynamic sub-list showing ONLY that plant's diseases.
+- Step 3 — clicking a disease populates an immediate "Actionable Treatment Plan" frame listing: Biological Root Cause (isolated pathogen strain), Immediate Eradication Steps (bulleted), Chemical/Cultural Treatment (exact classes/remedies).
+- Farmer Issue Logger mock form: Farmer Name + affected crop + diagnosed disease + button "Log Field Issue & Issue Treatment Sheet". Submitting creates an entry in an on-screen running Issue History feed.
+
+### UI/UX & TECHNICAL REQUIREMENTS
+- Tech Stack: React, Tailwind CSS, Lucide icons, accessible chart module (Recharts or equivalent) — all same-origin per Asset Rules.
+- Mock Data Engine: realistic Somali/East African farmer names, regional pH 4.5–8.5, local transaction references (ZAAD-TXN-…, EVC-CP-…).
+- State Reliability: every workflow (theme switch, roster edit, duty swap, certificates, payment intake with typed amounts, partial settlement, issue logging, disease drill-down) updates frontend state realistically without external servers.
+- Polish: enterprise SaaS look — consistent design language with the main "Somali SpatialBio Engine" dashboard it lives inside.

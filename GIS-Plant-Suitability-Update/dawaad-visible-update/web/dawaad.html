@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#07120e"/>
+  <title>Dawaad / Abaar Alert · Drought GIS</title>
+  <link rel="stylesheet" href="/web/vendor/leaflet/leaflet.css"/>
+  <link rel="stylesheet" href="/web/dawaad-map.css"/>
+</head>
+<body>
+  <div class="dawaad-shell">
+    <header class="dawaad-header">
+      <div class="dawaad-mark" aria-hidden="true">⌁</div>
+      <div class="dawaad-title">
+        <h1>Dawaad / Abaar Alert</h1>
+        <p>Horn of Africa agro-pastoral drought intelligence map</p>
+      </div>
+      <div class="dawaad-header-spacer"></div>
+      <a class="dawaad-back" href="/web/dashboard.html">← Main GIS</a>
+      <div class="dawaad-live-pill">GIS initialized</div>
+    </header>
+
+    <main class="dawaad-workspace">
+      <aside class="dawaad-sidebar" aria-label="Map configuration and layer status">
+        <section class="dawaad-card">
+          <h2>Map view</h2>
+          <dl class="dawaad-kv">
+            <dt>Center</dt><dd id="view-center">8.4167, 47.3667</dd>
+            <dt>Zoom</dt><dd id="view-zoom">8</dd>
+            <dt>Corridor</dt><dd>Sool–Nugaal</dd>
+          </dl>
+        </section>
+
+        <section class="dawaad-card dawaad-monitoring-card">
+          <div class="dawaad-card-heading">
+            <h2>Drought Monitoring / Kormeerka Abaaraha</h2>
+            <span id="monitoring-mode" class="dawaad-mode-badge">MOCK</span>
+          </div>
+          <label class="dawaad-region-label" for="monitoring-region">Pastoral region</label>
+          <select id="monitoring-region" class="dawaad-region-select">
+            <option>Sool</option><option>Nugaal</option><option>Sanaag</option><option>Togdheer</option><option>Mudug</option>
+          </select>
+          <div class="dawaad-metric-grid">
+            <div><span>10-day rain</span><b id="metric-rain">—</b></div>
+            <div><span>Rain anomaly</span><b id="metric-anomaly">—</b></div>
+            <div><span>VCI score</span><b id="metric-vci">—</b></div>
+            <div><span>Vegetation</span><b id="metric-vegetation">loading</b></div>
+          </div>
+          <div class="dawaad-monitoring-counts"><span id="metric-stations">0 stations</span><span id="metric-water">0 water points</span></div>
+          <div class="dawaad-water-legend"><span><i class="functional"></i>Functional</span><span><i class="stressed"></i>Stressed</span><span><i class="dry"></i>Dry</span></div>
+          <p id="monitoring-source" class="dawaad-monitoring-source">Loading monitoring fixtures…</p>
+        </section>
+
+        <section class="dawaad-card">
+          <h2>Administrative overlays</h2>
+          <div class="dawaad-layer-row">
+            <span class="dawaad-swatch gobol"></span>
+            <span>Gobol boundaries</span>
+            <span id="regions-state" class="dawaad-layer-state">waiting</span>
+          </div>
+          <div class="dawaad-layer-row">
+            <span class="dawaad-swatch degmo"></span>
+            <span>Degmo boundaries</span>
+            <span id="districts-state" class="dawaad-layer-state">waiting</span>
+          </div>
+          <p>
+            Source:
+            <a class="dawaad-source" href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries, CC BY 4.0</a>
+          </p>
+        </section>
+
+        <section class="dawaad-card">
+          <h2>Esri Satellite + Labels</h2>
+          <div class="dawaad-satellite-state">
+            Ready — high-resolution World Imagery and reference labels are selected. No API key is required.
+          </div>
+          <p>Imagery and labels are loaded directly from the public ArcGIS Online tile services with Esri attribution.</p>
+        </section>
+
+        <section class="dawaad-card">
+          <h2>Boundary policy</h2>
+          <p class="dawaad-policy-note">
+            Gobol and Degmo are operational administrative overlays. Somalia remains represented as one sovereign national territory; no de facto state boundary is classified here.
+          </p>
+        </section>
+      </aside>
+
+      <section class="dawaad-map-wrap" aria-label="Dawaad drought alert map workspace">
+        <div id="dawaad-map" aria-label="Interactive map of the Horn of Africa agro-pastoral corridor"></div>
+        <button id="pastoral-tools-toggle" class="dawaad-tools-toggle" type="button" aria-expanded="true" aria-controls="pastoral-tools-panel">☰ Pastoral Tools</button>
+        <aside id="pastoral-tools-panel" class="dawaad-tools-panel" aria-label="Pastoral utility tools">
+          <div class="dawaad-tools-header"><div><b>Pastoral Utility Tools</b><span>Agro-hydrology engineering</span></div><button id="pastoral-tools-close" type="button" aria-label="Close pastoral tools">×</button></div>
+
+          <section class="dawaad-tool-section">
+            <div class="dawaad-tool-title"><span>Underground Aquifer Layer</span><label class="dawaad-switch"><input id="aquifer-toggle" type="checkbox" checked/><i></i></label></div>
+            <div class="dawaad-aquifer-legend"><span><i class="high"></i>High Yield</span><span><i class="medium"></i>Medium</span><span><i class="saline"></i>Deep Saline</span></div>
+            <p id="aquifer-status" class="dawaad-tool-note">Loading indicative screening zones…</p>
+          </section>
+
+          <section id="solar-pump-widget" class="dawaad-tool-section">
+            <div class="dawaad-tool-title"><span>Solar Water Pump Sizing</span></div>
+            <div class="dawaad-pump-inputs">
+              <label>Daily output m³/day<input data-pump-input="daily" type="number" min="0.1" max="2000" step="1" value="30"/></label>
+              <label>TDH / well depth m<input data-pump-input="head" type="number" min="1" max="500" step="1" value="80"/></label>
+            </div>
+            <div class="dawaad-pump-results">
+              <div><span>Pump power</span><b data-pump-output="pump">—</b></div>
+              <div><span>PV array</span><b data-pump-output="solar">—</b></div>
+              <div><span>Daily runtime</span><b data-pump-output="runtime">—</b></div>
+              <div><span>Design flow</span><b data-pump-output="flow">—</b></div>
+            </div>
+            <p data-pump-output="error" class="dawaad-tool-error"></p>
+            <p class="dawaad-tool-note">55% wire-to-water efficiency · 5.5 peak-sun hours · engineering verification required.</p>
+          </section>
+
+          <section id="fence-planner-widget" class="dawaad-tool-section">
+            <div class="dawaad-tool-title"><span>Pastoral Fencing &amp; Corridor Planner</span></div>
+            <div class="dawaad-fence-results"><div><span>Fence perimeter</span><b data-fence-output="perimeter">0 m</b></div><div><span>Reserve area</span><b data-fence-output="area">0.00 ha</b></div></div>
+            <div class="dawaad-fence-actions"><button data-fence-action="start" type="button">Start drawing</button><button data-fence-action="finish" type="button">Finish &amp; close</button><button data-fence-action="undo" type="button">Undo</button><button data-fence-action="clear" type="button">Clear</button></div>
+            <p data-fence-output="status" class="dawaad-tool-note">Start drawing a seasonal grazing reserve.</p>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script src="/web/vendor/leaflet/leaflet.js"></script>
+  <script src="/web/pastoral-tools.js"></script>
+  <script src="/web/dawaad-map.js"></script>
+  <script>
+    function renderMonitoringStatus(status) {
+      const source = document.getElementById("monitoring-source");
+      if (status.state === "loading") {
+        source.textContent = `Loading ${status.region} monitoring indicators…`;
+        return;
+      }
+      if (status.state === "error") {
+        source.textContent = `Monitoring data unavailable: ${status.error}`;
+        return;
+      }
+      document.getElementById("metric-rain").textContent = `${status.averageRainfallMm} mm`;
+      document.getElementById("metric-anomaly").textContent = `${status.averageAnomalyPct > 0 ? "+" : ""}${status.averageAnomalyPct}%`;
+      document.getElementById("metric-vci").textContent = status.vciScore ?? "—";
+      document.getElementById("metric-vegetation").textContent = status.vegetationStatus || "—";
+      document.getElementById("metric-stations").textContent = `${status.stationCount} stations`;
+      document.getElementById("metric-water").textContent = `${status.waterPointCount} water points`;
+      document.getElementById("monitoring-mode").textContent = `${status.dataMode || "mock"} · ${status.source}`.toUpperCase();
+      source.textContent = `${status.period?.dekad || ""} · ${status.disclaimer || "Mock monitoring data"}`;
+    }
+
+    window.DAWAAD_CONFIG = Object.freeze({
+      defaultBasemap: "esri",
+      center: [8.4167, 47.3667],
+      zoom: 8,
+      initialRegion: "Sool",
+      monitoringApiBase: window.DAWAAD_API_BASE || "",
+      monitoringFallbackUrl: "/web/drought.mock.json",
+      onMonitoringStatus: renderMonitoringStatus,
+      boundarySources: {
+        regions: window.DAWAAD_GOBOL_GEOJSON_URL || "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09/releaseData/gbOpen/SOM/ADM1/geoBoundaries-SOM-ADM1_simplified.geojson",
+        districts: window.DAWAAD_DEGMO_GEOJSON_URL || "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09/releaseData/gbOpen/SOM/ADM2/geoBoundaries-SOM-ADM2_simplified.geojson"
+      },
+      onStatus(status) {
+        const node = document.getElementById(`${status.kind}-state`);
+        if (!node) return;
+        node.className = `dawaad-layer-state ${status.state}`;
+        node.textContent = status.state === "ready" ? `${status.count} loaded` : status.state;
+        if (status.error) node.title = status.error;
+      }
+    });
+
+    const component = new DawaadMapComponent("dawaad-map", window.DAWAAD_CONFIG).init();
+    window.dawaadMap = component;
+
+    const toolsPanel = document.getElementById("pastoral-tools-panel");
+    const toolsToggle = document.getElementById("pastoral-tools-toggle");
+    function setPastoralToolsOpen(open) {
+      toolsPanel.classList.toggle("is-closed", !open);
+      toolsToggle.setAttribute("aria-expanded", String(open));
+      toolsToggle.classList.toggle("is-visible", !open);
+    }
+    toolsToggle.addEventListener("click", () => setPastoralToolsOpen(true));
+    document.getElementById("pastoral-tools-close").addEventListener("click", () => setPastoralToolsOpen(false));
+
+    const map = component.getMap();
+    map.createPane("dawaadAquifers");
+    map.getPane("dawaadAquifers").style.zIndex = "450";
+    const aquiferWidget = new PastoralTools.AquiferOverlayWidget(map, {
+      pane: "dawaadAquifers",
+      toggle: document.getElementById("aquifer-toggle"),
+      url: "/web/dawaad.aquifers.geojson",
+      visible: true,
+      onStatus(status) {
+        document.getElementById("aquifer-status").textContent = status.state === "ready"
+          ? `${status.count} indicative zones · mock screening only`
+          : `Aquifer layer unavailable: ${status.error}`;
+      }
+    });
+    component.controls.layers.addOverlay(aquiferWidget.layer, "Groundwater potential");
+    map.on("overlayadd overlayremove", (event) => {
+      if (event.layer === aquiferWidget.layer) document.getElementById("aquifer-toggle").checked = map.hasLayer(aquiferWidget.layer);
+    });
+    const pumpWidget = new PastoralTools.SolarPumpWidget("#solar-pump-widget");
+    const fencePlanner = new PastoralTools.PastoralFencePlanner(map, "#fence-planner-widget");
+    window.pastoralWidgets = { aquiferWidget, pumpWidget, fencePlanner };
+
+    document.getElementById("monitoring-region").addEventListener("change", (event) => {
+      component.loadMonitoring(event.target.value)
+        .then(() => component.focusMonitoringRegion())
+        .catch(console.warn);
+    });
+
+    document.getElementById("dawaad-map").addEventListener("dawaad:viewchange", (event) => {
+      document.getElementById("view-center").textContent = event.detail.center.join(", ");
+      document.getElementById("view-zoom").textContent = event.detail.zoom;
+    });
+  </script>
+</body>
+</html>

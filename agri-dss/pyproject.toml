@@ -1,0 +1,15 @@
+[project]
+name = "agri-dss"
+version = "0.1.0"
+description = "Agricultural Spatial Decision Support System - well siting, crop matching, farm infrastructure"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"

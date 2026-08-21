@@ -1,0 +1,162 @@
+# Crop suitability rule database (East-African dryland orientation).
+# Calibrate with the agronomy partner before production rollout.
+#
+# Criterion forms:
+#   window:    {hard_min, opt_min, opt_max, hard_max, weight}  -> trapezoid score
+#   threshold: {min, weight}                                   -> 1 if value >= min,
+#              linear down to 0 at 60% of min (frost/salinity style gates)
+# Rainfall is evaluated against EFFECTIVE rainfall: climatology + any
+# supplemental irrigation passed to the engine (mm/yr).
+version: 1
+weights_must_sum_note: "per-criterion weights are normalized per crop"
+
+crops:
+  - name: maize
+    category: cereal
+    criteria:
+      effective_rainfall_mm: {hard_min: 350, opt_min: 500, opt_max: 900, hard_max: 1300, weight: 0.30}
+      temp_mean_c: {hard_min: 14, opt_min: 20, opt_max: 30, hard_max: 35, weight: 0.15}
+      coldest_month_min_c: {min: 4, weight: 0.10}
+      ph: {hard_min: 5.0, opt_min: 5.5, opt_max: 7.5, hard_max: 8.5, weight: 0.20}
+      clay_pct: {min: 8, max: 45, weight: 0.15}
+      soc_gkg: {min: 10, weight: 0.10}
+    notes: ["heavy feeder - split N applications", "striga risk in continuous cereal rotations"]
+
+  - name: sorghum
+    category: cereal
+    criteria:
+      effective_rainfall_mm: {hard_min: 250, opt_min: 400, opt_max: 800, hard_max: 1100, weight: 0.30}
+      temp_mean_c: {hard_min: 15, opt_min: 24, opt_max: 33, hard_max: 38, weight: 0.15}
+      coldest_month_min_c: {min: 5, weight: 0.10}
+      ph: {hard_min: 5.0, opt_min: 5.5, opt_max: 8.0, hard_max: 9.0, weight: 0.20}
+      clay_pct: {min: 5, max: 50, weight: 0.15}
+      soc_gkg: {min: 6, weight: 0.10}
+    notes: ["drought-escape short-duration varieties below 350 mm effective rainfall"]
+
+  - name: pearl_millet
+    category: cereal
+    criteria:
+      effective_rainfall_mm: {hard_min: 200, opt_min: 300, opt_max: 700, hard_max: 1000, weight: 0.30}
+      temp_mean_c: {hard_min: 16, opt_min: 26, opt_max: 35, hard_max: 40, weight: 0.15}
+      coldest_month_min_c: {min: 6, weight: 0.10}
+      ph: {hard_min: 5.0, opt_min: 5.5, opt_max: 8.5, hard_max: 9.5, weight: 0.20}
+      clay_pct: {min: 3, max: 40, weight: 0.15}
+      soc_gkg: {min: 4, weight: 0.10}
+    notes: ["best cereal for sandy soils and <300 mm zones"]
+
+  - name: cowpea
+    category: legume
+    criteria:
+      effective_rainfall_mm: {hard_min: 250, opt_min: 400, opt_max: 750, hard_max: 1100, weight: 0.30}
+      temp_mean_c: {hard_min: 16, opt_min: 22, opt_max: 33, hard_max: 37, weight: 0.15}
+      coldest_month_min_c: {min: 8, weight: 0.10}
+      ph: {hard_min: 5.0, opt_min: 5.8, opt_max: 8.0, hard_max: 9.0, weight: 0.20}
+      clay_pct: {min: 5, max: 40, weight: 0.15}
+      soc_gkg: {min: 5, weight: 0.10}
+    notes: ["N-fixing: responds to P more than N", "dual-purpose grain/fodder"]
+    fixes_nitrogen: true
+
+  - name: mung_bean
+    category: legume
+    criteria:
+      effective_rainfall_mm: {hard_min: 300, opt_min: 450, opt_max: 700, hard_max: 1000, weight: 0.30}
+      temp_mean_c: {hard_min: 18, opt_min: 24, opt_max: 32, hard_max: 36, weight: 0.15}
+      coldest_month_min_c: {min: 10, weight: 0.10}
+      ph: {hard_min: 5.5, opt_min: 6.0, opt_max: 7.8, hard_max: 8.8, weight: 0.20}
+      clay_pct: {min: 8, max: 40, weight: 0.15}
+      soc_gkg: {min: 8, weight: 0.10}
+    notes: ["short 60-70 day window fits erratic rains"]
+    fixes_nitrogen: true
+
+  - name: groundnut
+    category: legume_oilseed
+    criteria:
+      effective_rainfall_mm: {hard_min: 350, opt_min: 500, opt_max: 800, hard_max: 1100, weight: 0.30}
+      temp_mean_c: {hard_min: 18, opt_min: 24, opt_max: 33, hard_max: 37, weight: 0.15}
+      coldest_month_min_c: {min: 12, weight: 0.10}
+      ph: {hard_min: 5.3, opt_min: 6.0, opt_max: 7.5, hard_max: 8.5, weight: 0.20}
+      clay_pct: {min: 3, max: 30, weight: 0.15}
+      soc_gkg: {min: 6, weight: 0.10}
+    notes: ["needs friable soil for pegging - avoid heavy clay", "gypsum at flowering for pod fill"]
+    fixes_nitrogen: true
+
+  - name: sesame
+    category: oilseed
+    criteria:
+      effective_rainfall_mm: {hard_min: 300, opt_min: 450, opt_max: 650, hard_max: 900, weight: 0.30}
+      temp_mean_c: {hard_min: 18, opt_min: 25, opt_max: 35, hard_max: 38, weight: 0.15}
+      coldest_month_min_c: {min: 12, weight: 0.10}
+      ph: {hard_min: 5.4, opt_min: 5.8, opt_max: 8.0, hard_max: 8.8, weight: 0.20}
+      clay_pct: {min: 5, max: 40, weight: 0.15}
+      soc_gkg: {min: 5, weight: 0.10}
+    notes: ["waterlogging-intolerant: needs drainage", "high-value export crop"]
+
+  - name: tomato
+    category: vegetable
+    criteria:
+      effective_rainfall_mm: {hard_min: 400, opt_min: 600, opt_max: 1000, hard_max: 1400, weight: 0.25}
+      temp_mean_c: {hard_min: 15, opt_min: 20, opt_max: 28, hard_max: 34, weight: 0.20}
+      coldest_month_min_c: {min: 8, weight: 0.10}
+      ph: {hard_min: 5.5, opt_min: 6.0, opt_max: 7.5, hard_max: 8.2, weight: 0.20}
+      clay_pct: {min: 8, max: 40, weight: 0.15}
+      cec_mmolc_kg: {min: 10, weight: 0.10}
+    notes: ["assume irrigated management; heat above 35C causes flower drop"]
+    irrigated_default: true
+
+  - name: onion
+    category: vegetable
+    criteria:
+      effective_rainfall_mm: {hard_min: 350, opt_min: 500, opt_max: 800, hard_max: 1100, weight: 0.25}
+      temp_mean_c: {hard_min: 13, opt_min: 18, opt_max: 28, hard_max: 33, weight: 0.20}
+      coldest_month_min_c: {min: 6, weight: 0.10}
+      ph: {hard_min: 5.8, opt_min: 6.2, opt_max: 7.5, hard_max: 8.3, weight: 0.20}
+      clay_pct: {min: 8, max: 35, weight: 0.15}
+      cec_mmolc_kg: {min: 10, weight: 0.10}
+    notes: ["shallow-rooted: light frequent irrigation", "curing needs dry harvest window"]
+    irrigated_default: true
+
+  - name: watermelon
+    category: vegetable
+    criteria:
+      effective_rainfall_mm: {hard_min: 300, opt_min: 400, opt_max: 700, hard_max: 1000, weight: 0.25}
+      temp_mean_c: {hard_min: 18, opt_min: 24, opt_max: 32, hard_max: 36, weight: 0.20}
+      coldest_month_min_c: {min: 12, weight: 0.10}
+      ph: {hard_min: 5.5, opt_min: 6.0, opt_max: 7.5, hard_max: 8.5, weight: 0.20}
+      clay_pct: {min: 3, max: 30, weight: 0.15}
+      soc_gkg: {min: 5, weight: 0.10}
+    notes: ["sandy soils preferred; drip + mulch lifts water productivity"]
+
+  - name: banana
+    category: perennial_fruit
+    criteria:
+      effective_rainfall_mm: {hard_min: 900, opt_min: 1200, opt_max: 1800, hard_max: 2500, weight: 0.30}
+      temp_mean_c: {hard_min: 18, opt_min: 25, opt_max: 30, hard_max: 34, weight: 0.20}
+      coldest_month_min_c: {min: 14, weight: 0.10}
+      ph: {hard_min: 5.5, opt_min: 6.0, opt_max: 7.5, hard_max: 8.0, weight: 0.15}
+      clay_pct: {min: 15, max: 50, weight: 0.15}
+      cec_mmolc_kg: {min: 15, weight: 0.10}
+    notes: ["riverine/irrigated systems only in dryland zones", "windbreaks recommended"]
+    irrigated_default: true
+
+  - name: mango
+    category: perennial_fruit
+    criteria:
+      effective_rainfall_mm: {hard_min: 400, opt_min: 600, opt_max: 1200, hard_max: 1800, weight: 0.30}
+      temp_mean_c: {hard_min: 18, opt_min: 24, opt_max: 32, hard_max: 37, weight: 0.20}
+      coldest_month_min_c: {min: 10, weight: 0.10}
+      ph: {hard_min: 5.5, opt_min: 6.0, opt_max: 8.0, hard_max: 8.8, weight: 0.15}
+      clay_pct: {min: 5, max: 45, weight: 0.15}
+      soc_gkg: {min: 6, weight: 0.10}
+    notes: ["a dry pre-flowering window improves fruit set", "suits orchard zone of master plan"]
+
+  - name: date_palm
+    category: perennial_fruit
+    criteria:
+      effective_rainfall_mm: {hard_min: 100, opt_min: 200, opt_max: 600, hard_max: 1000, weight: 0.25}
+      temp_mean_c: {hard_min: 20, opt_min: 27, opt_max: 36, hard_max: 42, weight: 0.25}
+      coldest_month_min_c: {min: 9, weight: 0.10}
+      ph: {hard_min: 6.5, opt_min: 7.0, opt_max: 8.5, hard_max: 9.0, weight: 0.15}
+      clay_pct: {min: 5, max: 50, weight: 0.15}
+      cec_mmolc_kg: {min: 8, weight: 0.10}
+    notes: ["needs groundwater access (pairs with well siting)", "tolerates salinity better than most fruits"]
+    irrigated_default: true

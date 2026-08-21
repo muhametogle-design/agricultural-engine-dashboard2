@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Somali SpatialBio Engine · Unified GIS & Agricultural ERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+  .tab-active{background:#065f46;color:#6ee7b7;border-color:#059669!important}
+  .base-active{outline:2px solid #34d399;outline-offset:-2px}
+  .leaflet-bar a{background:#0f172a;color:#e2e8f0;border-color:#334155}
+  .vertex-marker{background:#10b981;border:2px solid #022c22;border-radius:50%;cursor:move}
+  .mid-marker{background:#94a3b8;border:1px solid #0f172a;border-radius:50%;opacity:.85}
+  .draw-dot{background:#f59e0b;border:1px solid #7c2d12;border-radius:50%}
+  .flora-active{outline:2px solid #fbbf24;outline-offset:-2px;border-color:#fbbf24!important}
+  .soil-active{outline:2px solid #38bdf8;outline-offset:-2px}
+  button:focus-visible,input:focus-visible{outline:2px solid #34d399;outline-offset:1px}
+
+  /* Orbital logo */
+  .orbit-sat{animation:orbit 7s linear infinite;transform-origin:24px 24px}
+  @keyframes orbit{to{transform:rotate(360deg)}}
+
+  /* ── LIGHT THEME (dom repaint only — map tile cache untouched) ── */
+  html[data-theme="light"] body{background:#eef2f7;color:#0f172a}
+  html[data-theme="light"] .bg-slate-950{background:#fff!important;border-color:#e2e8f0!important}
+  html[data-theme="light"] .bg-slate-900{background:#f1f5f9!important;border-color:#e2e8f0!important}
+  html[data-theme="light"] .bg-slate-900\/60{background:#ffffffcc!important}
+  html[data-theme="light"] .text-slate-200,html[data-theme="light"] .text-slate-300,
+  html[data-theme="light"] .text-slate-400{color:#334155!important}
+  html[data-theme="light"] .text-slate-500{color:#64748b!important}
+  html[data-theme="light"] .text-slate-600{color:#94a3b8!important}
+  html[data-theme="light"] .border-slate-800,html[data-theme="light"] .border-slate-700{border-color:#cbd5e1!important}
+  html[data-theme="light"] .bg-slate-800{background:#e2e8f0!important}
+  html[data-theme="light"] .placeholder\:text-slate-600::-webkit-input-placeholder{color:#94a3b8}
+  html[data-theme="light"] .leaflet-bar a{background:#fff;color:#0f172a}
+  html[data-theme="light"] .bg-emerald-950\/60{background:#d1fae5!important}
+  html[data-theme="light"] .bg-emerald-950\/40,html[data-theme="light"] .bg-emerald-950\/50{background:#ecfdf5!important;color:#065f46!important;border-color:#6ee7b7!important}
+  html[data-theme="light"] .bg-amber-950\/20{background:#fffbeb!important;color:#92400e!important;border-color:#fde68a!important}
+  html[data-theme="light"] .bg-red-950\/50{background:#fef2f2!important;color:#991b1b!important;border-color:#fecaca!important}
+  html[data-theme="light"] .text-emerald-300{color:#047857!important}
+  html[data-theme="light"] .text-emerald-400{color:#059669!important}
+  html[data-theme="light"] .text-sky-300{color:#0369a1!important}
+  html[data-theme="light"] .text-sky-400{color:#0284c7!important}
+  html[data-theme="light"] .text-amber-300,html[data-theme="light"] .text-amber-200{color:#b45309!important}
+  html[data-theme="light"] .text-cyan-300{color:#0e7490!important}
+  html[data-theme="light"] .text-red-200\/80{color:#b91c1c!important}
+  html[data-theme="light"] .tab-active{background:#059669!important;color:#fff!important}
+  html[data-theme="light"] .hist-chip{color:#334155!important}
+
+  /* ── PRINT: certificate only; NASA banner + lineage (data-no-print) statically stripped ── */
+  @media print{
+    body *{visibility:hidden}
+    .cert-wrap,.cert-wrap *{visibility:visible}
+    .cert-wrap{position:absolute;inset:0;overflow:visible;background:#fff}
+    #ph-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:2px}
+
+  /* ── PRINT: certificate only; NASA banner + lineage statically stripped ── */
+  @media print{
+    body *{visibility:hidden}
+    .cert-wrap,.cert-wrap *{visibility:visible}
+    .cert-wrap{position:absolute;inset:0;overflow:visible;background:#fff}
+    .data-node,.cert-hidden,[data-no-print]{display:none!important}
+    aside,header,main,footer{display:none!important}
+  }
+  .seal{transform:rotate(-8deg);opacity:.9}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-200 h-screen overflow-hidden flex flex-col">
+
+<header class="h-12 bg-slate-950 border-b border-slate-800 flex items-center gap-3 px-4 z-30 flex-none">
+  <button onclick="toggleLeft()" aria-label="Toggle left panel" class="p-1.5 rounded hover:bg-slate-800"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  <div class="flex items-center gap-2.5 select-none" id="brand">
+    <svg width="30" height="30" viewBox="0 0 48 48" class="flex-none" role="img" aria-label="Orbital satellite logo">
+      <defs><linearGradient id="plg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient></defs>
+      <g transform="rotate(-24 24 24)">
+        <ellipse cx="24" cy="24" rx="21" ry="7.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+      </g>
+      <circle cx="24" cy="24" r="10" fill="url(#plg)"/>
+      <path d="M15 22 a10 10 0 0 0 7 6 10 10 0 0 0 11-4" fill="none" stroke="#022c22" stroke-width="1.1" opacity=".55"/>
+      <g transform="rotate(-24 24 24)"><g class="orbit-sat">
+        <rect x="2.4" y="22.6" width="2.8" height="2.8" rx=".6" fill="#facc15"/>
+      </g></g>
+    </svg>
+    <div class="leading-none">
+      <div class="font-extrabold tracking-widest text-[15px]"><span class="text-emerald-400">SOMALI</span> <span class="text-slate-200">SPATIALBIO</span> <span class="text-sky-400">ENGINE</span></div>
+      <div class="text-[10px] text-slate-500 tracking-wide mt-0.5 hidden md:block">GIS · Global Flora DB · 18-Region Soil Engine · Smart Simulation · Laboratory Analytics</div>
+    </div>
+  </div>
+  <div class="flex-1"></div>
+  <a href="/lims" title="Laboratory Information Management System"
+     class="px-2 py-1.5 rounded-lg border border-slate-800 hover:border-violet-500 text-xs text-slate-400">🧪 Lab LIMS</a>
+  <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span id="api-led" class="w-2 h-2 rounded-full bg-slate-600"></span><span id="api-text">API…</span></div>
+  <button id="theme-btn" onclick="toggleTheme()" role="switch" aria-checked="true" aria-label="Switch to light mode" title="Toggle light / dark mode"
+          class="px-2.5 py-1.5 rounded-lg border border-slate-800 hover:border-emerald-500 text-sm">🌙</button>
+  <button onclick="toggleRight()" aria-label="Toggle database panel" class="lg:hidden p-1.5 rounded hover:bg-slate-800">🌿</button>
+</header>
+
+<div class="flex flex-1 min-h-0 relative">
+
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <aside id="left" class="w-72 bg-slate-950 border-r border-slate-800 flex flex-col z-20 flex-none
+         absolute lg:static h-full -translate-x-full lg:translate-x-0 transition-transform overflow-y-auto">
+    <nav class="p-2 border-b border-slate-800 flex-none">
+      <button class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-emerald-950/60 text-emerald-300 text-sm">🗺️ Map & AOIs</button>
+    </nav>
+    <div class="p-3 border-b border-slate-800 flex-none">
+      <div class="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Basemap</div>
+      <div id="basemaps" class="grid grid-cols-2 gap-2"></div>
+      <div class="mt-2.5 text-[10px] uppercase tracking-widest text-slate-500 mb-1">Data overlay</div>
+      <label class="flex items-center gap-1.5 text-[11px] text-slate-400 select-none cursor-pointer">
+        <input type="checkbox" id="ov-ph" onchange="togglePhOverlay(this.checked)"/> 🗺️ FAO topsoil pH map (HWSD v2.0)
+      </label>
+      <div id="ph-legend" class="hidden mt-2 rounded-lg bg-slate-900 border border-slate-800 p-2">
+        <div class="text-[9px] uppercase tracking-widest text-slate-500 mb-1">topsoil 0–20 cm pH</div>
+        <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] text-slate-400">
+          <span><i style="background:#2d9c3c"></i>&lt; 5.5 — strong acid</span>
+          <span><i style="background:#7bc043"></i>5.5–6.5 — acid</span>
+          <span><i style="background:#c8da48"></i>6.5–7.0 — neutral</span>
+          <span><i style="background:#f4d03f"></i>7.0–7.5 — mild alkali</span>
+          <span><i style="background:#f39c12"></i>7.5–8.0 — alkali</span>
+          <span><i style="background:#e67e22"></i>8.0–8.5 — strong alkali</span>
+          <span><i style="background:#c0392b"></i>&gt; 8.5 — extreme</span>
+        </div>
+        <div class="mt-1 text-[9px] text-slate-600">FAO/IIASA HWSD v2.0 · 1 km grid · labels auto-join to polygons</div>
+      </div>
+    </div>
+    <div class="p-3 border-b border-slate-800 flex-none">
+      <div class="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Polygon engine</div>
+      <div class="flex gap-2 flex-wrap">
+        <button id="btn-draw" onclick="startDraw()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">＋ Draw AOI</button>
+        <button id="btn-finish" onclick="finishDraw()" class="hidden px-3 py-1.5 rounded-lg bg-amber-600 text-xs font-semibold">✔ Finish</button>
+        <button id="btn-cancel" onclick="cancelDraw()" class="hidden px-3 py-1.5 rounded-lg bg-slate-700 text-xs">Cancel</button>
+        <button onclick="demoPlot()" class="px-3 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-600 text-xs font-semibold">Demo plot</button>
+      </div>
+      <div id="draw-hint" class="hidden mt-2 text-[11px] text-amber-300/90">Click corners · double-click/Finish to close. Edit: drag verts · Shift-click/right-click deletes · grey dots insert.</div>
+    </div>
+    <div class="p-3 border-b border-slate-800 grid grid-cols-2 gap-2 flex-none">
+      <div class="rounded-lg bg-slate-900 border border-slate-800 p-2">
+        <div class="text-[10px] text-slate-500 uppercase">Selected area</div>
+        <div class="text-lg font-bold text-emerald-300" id="stat-ha">—</div>
+        <div class="text-[11px] text-slate-500" id="stat-ac">select / draw a polygon</div>
+      </div>
+      <div class="rounded-lg bg-slate-900 border border-slate-800 p-2">
+        <div class="text-[10px] text-slate-500 uppercase">AOIs</div>
+        <div class="text-lg font-bold text-sky-300" id="stat-count">0</div>
+        <div class="text-[11px] text-slate-500">editable session objects</div>
+      </div>
+    </div>
+    <div class="p-2 min-h-[100px] max-h-48 overflow-y-auto border-b border-slate-800 flex-none" id="aoi-list"></div>
+
+    <!-- LABORATORY ANALYTICS SIDEBAR -->
+    <div class="p-3 border-b border-slate-800 flex-none">
+      <div class="text-[10px] uppercase tracking-widest text-slate-500 mb-2">🧪 Laboratory Analytics</div>
+      <div class="grid grid-cols-4 gap-1.5 text-[11px]">
+        <label class="col-span-1"><span class="text-[9px] text-slate-500">pH</span>
+          <input id="lab-ph" inputmode="decimal" placeholder="7.4" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5"/></label>
+        <label class="col-span-1"><span class="text-[9px] text-slate-500">EC dS/m</span>
+          <input id="lab-ec" inputmode="decimal" placeholder="1.2" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5"/></label>
+        <label class="col-span-1"><span class="text-[9px] text-slate-500">OM %</span>
+          <input id="lab-om" inputmode="decimal" placeholder="1.0" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5"/></label>
+        <label class="col-span-1"><span class="text-[9px] text-slate-500">&nbsp;</span>
+          <div class="px-1 py-1.5 text-[9px] text-slate-600">measured</div></label>
+        <label class="col-span-4 grid grid-cols-3 gap-1.5">
+          <span><span class="text-[9px] text-slate-500">N nitrate ppm</span>
+            <input id="lab-n" inputmode="decimal" placeholder="e.g. 18" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5"/></span>
+          <span><span class="text-[9px] text-slate-500">P olsen ppm</span>
+            <input id="lab-p" inputmode="decimal" placeholder="e.g. 9" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5"/></span>
+          <span><span class="text-[9px] text-slate-500">K exch. ppm</span>
+            <input id="lab-k" inputmode="decimal" placeholder="e.g. 140" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5"/></span>
+        </label>
+      </div>
+      <div class="mt-1.5 flex gap-1.5">
+        <input id="client-name" placeholder="Client / farmer name" oninput="saveClient()" class="flex-1 bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-[11px]"/>
+      </div>
+      <div class="mt-2 grid grid-cols-2 gap-1.5">
+        <button onclick="applyLab()" title="Manual field-kit entry always overrides" class="px-3 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-600 text-white text-xs font-semibold">✏️ Apply manual sample</button>
+        <button onclick="autoLab()" title="Auto-generate from FAO/IIASA HWSD v2.0" class="px-3 py-1.5 rounded-lg bg-violet-700 hover:bg-violet-600 text-white text-xs font-semibold">🛰 Auto-fill (HWSD)</button>
+        <button onclick="issueCertificate()" class="col-span-2 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold">📜 Generate Digital Certificate</button>
+      </div>
+      <label class="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-500 select-none"><input type="checkbox" id="lab-auto-aoi" checked/> auto-sample HWSD v2.0 for every new polygon</label>
+      <div id="lab-verdict" class="mt-1.5 text-[10px] text-slate-600">Manual entry wins · if blank, pH/OM/N are generated from the FAO/IIASA HWSD v2.0 raster.</div>
+    </div>
+
+    <!-- HISTORICAL DATA LOG -->
+    <div class="p-3 flex-none">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="text-[10px] uppercase tracking-widest text-slate-500">🕒 Historical Data Log</div>
+        <div class="flex gap-2">
+          <button onclick="exportAudit()" class="text-[10px] text-sky-400 hover:text-sky-300">export CSV</button>
+          <button onclick="clearHistory()" class="text-[10px] text-slate-600 hover:text-red-400">clear</button>
+        </div>
+      </div>
+      <div id="history" class="max-h-44 overflow-y-auto space-y-1 text-[11px]"></div>
+    </div>
+
+    <div class="flex-1"></div>
+    <div class="p-2 border-t border-slate-800 flex-none">
+      <input id="api-base" placeholder="API base (blank = same origin)" oninput="setApiBase(this.value)"
+             class="w-full text-[11px] bg-slate-900 border border-slate-800 rounded px-2 py-1.5 placeholder:text-slate-600"/>
+    </div>
+  </aside>
+  <div id="left-scrim" onclick="toggleLeft()" class="hidden absolute inset-0 bg-black/50 z-10 lg:hidden"></div>
+
+  <!-- ══ MAP ══ -->
+  <main class="flex-1 min-w-0 relative"><div id="map" class="absolute inset-0"></div></main>
+
+  <!-- ══ RIGHT SIDEBAR ══ -->
+  <aside id="right" class="w-[430px] bg-slate-950 border-l border-slate-800 flex flex-col z-20 flex-none
+         absolute right-0 h-full translate-x-full lg:translate-x-0 lg:static transition-transform">
+    <div class="p-3 border-b border-slate-800 flex-none">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="font-bold text-emerald-300 text-sm">Global Crops · Fruits · Vegetables</div>
+          <div class="text-[11px] text-slate-500">152-entry seed · tap an item → simulation sizes to your polygon</div>
+        </div>
+        <button onclick="toggleRight()" class="lg:hidden text-slate-500">✕</button>
+      </div>
+      <input id="flora-search" oninput="onSearch()" placeholder="Search Somali / English / scientific…"
+             aria-label="Search flora database" class="mt-2 w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm placeholder:text-slate-600"/>
+      <div id="tabs" class="mt-2 flex flex-wrap gap-1 text-[11px]"></div>
+    </div>
+
+    <div id="flora-body" class="flex-1 overflow-y-auto p-3 space-y-2 min-h-0"></div>
+
+    <!-- SMART ENGINE -->
+    <div class="flex-none border-t border-slate-800 bg-slate-900/60 p-3 max-h-[46%] overflow-y-auto">
+      <div class="flex items-center justify-between mb-2">
+        <div class="text-[10px] uppercase tracking-widest text-amber-400 font-bold">⚙ Smart Engine · Simulation</div>
+        <button onclick="renderSim()" class="text-[10px] text-slate-500 hover:text-slate-300">↻ refresh</button>
+      </div>
+      <div id="sim-body" class="text-sm"></div>
+      <div class="mt-2 text-[10px] text-slate-600 cert-hidden" data-no-print>
+        Sources: NASA POWER climatology · AWS/SRTM terrain tiles · ISRIC SoilGrids v2 · Somali Flora Field-Manual baseline.
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ══ SPEC-7 ATTRIBUTION BANNER (screen-only, print-restricted) ══ -->
+<footer class="data-node h-7 flex-none bg-slate-950 border-t border-slate-800 flex items-center gap-2 px-3 text-[10px] text-slate-500 z-20" data-no-print>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" aria-hidden="true">
+    <rect x="9" y="9" width="6" height="6" rx="1" transform="rotate(20 12 12)"/>
+    <path d="M4 6 9 11M20 18l-5-5"/><path d="M2 12h4M18 12h4" opacity=".6"/></svg>
+  <span>Data Processing Node powered by NASA FIRMS &amp; SMAP Global Soil Moisture Data Engine.</span>
+  <span class="ml-auto hidden md:inline text-slate-600">Lineage: NASA POWER · ISRIC SoilGrids v2 · AWS/SRTM · on-screen only — excluded from client prints.</span>
+</footer>
+
+<!-- ══ CERTIFICATE MODAL ══ -->
+<div id="cert-modal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Client certificate">
+  <div class="cert-wrap bg-white text-slate-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto">
+    <div class="p-8 font-serif" id="cert-doc"></div>
+    <div class="flex gap-2 p-4 border-t bg-slate-50 rounded-b-xl" data-no-print>
+      <button onclick="window.print()" class="flex-1 px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm">🖨 Print certificate</button>
+      <button onclick="document.getElementById('cert-modal').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-slate-200 text-sm">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ═══════════════ SPEC-1 · THEME (accessible toggle, no map repaint) ═══════════════ */
+function applyTheme(){
+ const t=localStorage.getItem("ssb_theme")||"dark";
+ document.documentElement.dataset.theme=t;
+ const b=document.getElementById("theme-btn");
+ b.textContent=t==="dark"?"🌙":"☀️";
+ b.setAttribute("aria-checked",t==="dark"?"true":"false");
+ b.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");
+}
+function toggleTheme(){localStorage.setItem("ssb_theme",(localStorage.getItem("ssb_theme")||"dark")==="dark"?"light":"dark");applyTheme();}
+applyTheme();
+
+/* ═══════════════ CONFIG / STATE ═══════════════ */
+const HOME=[2.046,45.318];
+let apiBase=(localStorage.getItem("agri_api_base")||"").replace(/\/+$/,"");
+function setApiBase(v){let s=(v||"").trim().replace(/\/+$/,"");try{s=new URL(s).origin}catch{}apiBase=s;localStorage.setItem("agri_api_base",s);pingApi();}
+document.getElementById("api-base").value=apiBase;
+document.getElementById("client-name").value=localStorage.getItem("ssb_client")||"";
+function saveClient(){localStorage.setItem("ssb_client",document.getElementById("client-name").value);}
+const state={draw:null,aois:[],selected:null,seq:1,flora:null,soil:"shabelle",labManual:false};
+
+/* ═══════════════ SPEC-4 · HISTORICAL DATA LOG (multi-session audit) ═══════════════ */
+function loadHist(){try{return JSON.parse(localStorage.getItem("ssb_history")||"[]");}catch{return [];}}
+function logEv(action,extra){
+ const h=loadHist();
+ const now=new Date();
+ h.unshift(Object.assign({ts:now.toLocaleString(),iso:now.toISOString(),action},extra||{}));
+ localStorage.setItem("ssb_history",JSON.stringify(h.slice(0,100)));
+ renderHistory();
+}
+function gradeChip(r){if(!r)return "";const c={A:"emerald",B:"emerald",C:"amber",D:"red"}[r.grade]||"slate";
+ return `<span class="hist-chip inline-block rounded px-1 border border-${c}-700 text-${c}-300">soil ${r.score}/100·${r.grade}</span>`;}
+function renderHistory(){
+ const h=loadHist(),box=document.getElementById("history");
+ if(!h.length){box.innerHTML='<div class="text-slate-600 text-center py-2">auditable session events appear here</div>';return;}
+ box.innerHTML=h.map(e=>{
+  if(e.text&&!e.action){return `<div class="rounded bg-slate-900 border border-slate-800 px-2 py-1"><span class="text-slate-600">[${(e.t||"").split(",")[1]||e.t||""}]</span> ${e.text}${e.src?`<div class="text-[10px] text-slate-600" data-no-print>src: ${e.src}</div>`:""}</div>`;}
+  const chips=`${e.area?`<span class="hist-chip inline-block rounded px-1 border border-slate-700 text-slate-400">${e.area}</span>`:""}
+   ${e.flora?`<span class="hist-chip inline-block rounded px-1 border border-slate-700 text-emerald-300">${e.flora}</span>`:""}
+   ${gradeChip(e.rating)}`;
+  return `<div class="rounded bg-slate-900 border border-slate-800 px-2 py-1">
+   <div class="flex justify-between text-[9px] text-slate-500"><span>${e.ts}</span>${e.src?`<span data-no-print>${e.src}</span>`:""}</div>
+   <div class="leading-snug">${e.action}</div>${chips!==""?`<div class="mt-0.5 space-x-1">${chips}</div>`:""}</div>`;
+ }).join("");
+}
+function clearHistory(){localStorage.removeItem("ssb_history");renderHistory();}
+function exportAudit(){
+ const h=loadHist().map(e=>({iso:e.iso||"",timestamp:e.ts||e.t||"",action:(e.action||e.text||"").replace(/[<>]/g,""),
+  polygon_area:e.area||"",flora:e.flora||"",soil_rating:e.rating?`${e.rating.score}/${e.rating.grade}`:"",source:e.src||""}));
+ const esc=v=>`"${String(v).replace(/"/g,'""')}"`;
+ const csv=["iso,timestamp,action,polygon_area,flora,soil_rating,source",
+   ...h.map(r=>Object.values(r).map(esc).join(","))].join("\r\n");
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download=`SSB_audit_${new Date().toISOString().slice(0,10)}.csv`;
+ document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+}
+renderHistory();
+
+/* ═══════════════ MAP & BASEMAPS (SPEC-8 · repaired Esri endpoint) ═══════════════ */
+const map=L.map("map",{preferCanvas:true}).setView(HOME,14);
+const BASES={
+ "Esri World Imagery":L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Esri, Maxar, Earthstar Geographics"}),
+ "Google Satellite":L.tileLayer("https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",{subdomains:["0","1","2","3"],maxZoom:20,attribution:"Google"}),
+ "OSM Standard":L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
+ "Carto Dark":L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,attribution:"© CARTO"}),
+};
+let activeBase="Esri World Imagery";
+const baseBox=document.getElementById("basemaps");
+Object.keys(BASES).forEach(n=>{
+ const b=document.createElement("button");b.textContent=n;b.dataset.name=n;
+ b.className="px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] hover:border-emerald-500 "+(n===activeBase?"base-active":"");
+ b.onclick=()=>{if(n===activeBase)return;map.removeLayer(BASES[activeBase]);BASES[n].addTo(map);activeBase=n;
+  baseBox.querySelectorAll("button").forEach(x=>x.classList.toggle("base-active",x.dataset.name===n));};
+ baseBox.appendChild(b);});
+BASES[activeBase].addTo(map);
+
+/* FAO HWSD v2.0 topsoil-pH overlay (pre-rendered from the Somalia clip) */
+const PH_BOUNDS=[[-1.8,40.9],[12.2,51.5]];
+let phOverlay=null;
+function togglePhOverlay(on){
+ document.getElementById("ph-legend").classList.toggle("hidden",!on);
+ if(on){
+  const base=apiBase||location.origin;
+  phOverlay=L.imageOverlay(base+"/web/hwsd_ph_overlay.png",PH_BOUNDS,{interactive:false,opacity:1}).addTo(map);
+  if(state.selected)state.selected.poly.bringToFront();
+  logEv("Displayed FAO topsoil pH overlay (HWSD v2.0 clip)",{flora:state.flora?state.flora.en:null,rating:healthScore(SOILS[state.soil]),src:"data/hwsd/hwsd2_somalia.tif"});
+ }else if(phOverlay){map.removeLayer(phOverlay);phOverlay=null;}
+}
+
+/* click-to-probe: exact topsoil readings from the HWSD v2.0 cell under the cursor */
+let _probeBusy=false;
+function probeSoil(latlng){
+ if(_probeBusy||!phOverlay)return;_probeBusy=true;
+ const base=apiBase||location.origin;
+ const pop=L.popup({maxWidth:280}).setLatLng(latlng).setContent("<div class='text-xs p-1'>⏳ Sampling FAO HWSD v2.0 topsoil…</div>").openOn(map);
+ fetch(base+"/api/v1/lab/hwsd/sample?lat="+latlng.lat.toFixed(6)+"&lon="+latlng.lng.toFixed(6))
+ .then(r=>r.json()).then(j=>{
+  if(!j.available){pop.setContent("<div class='text-xs p-1'>HWSD dataset not mounted on this server.</div>");return;}
+  const s=j.sample;
+  if(!s||s.ph==null){pop.setContent("<div class='text-xs p-1'>Outside the soil grid at this point.</div>");return;}
+  const phCol=s.ph<5.5?"#2d9c3c":s.ph<6.5?"#7bc043":s.ph<7?"#c8da48":s.ph<7.5?"#f4d03f":s.ph<8?"#f39c12":s.ph<8.5?"#e67e22":"#c0392b";
+  pop.setContent("<div class='p-1' style='font-size:12px;line-height:1.35'>"
+   +"<div style='font-weight:700;margin-bottom:2px'>🛰 FAO topsoil reading <span style='color:#64748b'>0–20 cm</span></div>"
+   +"<div style='font-size:22px;font-weight:700'><span style='display:inline-block;width:14px;height:14px;border-radius:3px;background:"+phCol+";margin-right:4px'></span>pH "+s.ph+"</div>"
+   +"<div>Organic matter: <b>"+(s.om_pct??"—")+"%</b> · Total N: <b>"+(s.nitrogen_pct??"—")+"%</b></div>"
+   +"<div>Texture: clay <b>"+(s.clay_pct??"—")+"%</b> · sand <b>"+(s.sand_pct??"—")+"%</b> · silt <b>"+(s.silt_pct??"—")+"%</b></div>"
+   +"<div>CEC: <b>"+(s.cec??"—")+"</b> · WRB class: <b>"+(s.wrb??"—")+"</b> · MU "+s.mu_id+"</div>"
+   +"<div style='font-size:10px;color:#64748b;margin-top:2px'>"+s.source+(s.nearest_km?" · nearest profiled pixel "+s.nearest_km+" km away":"")+"</div>"
+   +"<button onclick='probeToLab()' class='mt-1 px-2 py-1 rounded' style='background:#6d28d9;color:#fff;font-size:11px;margin-top:4px'>⤵ Use as lab baseline</button></div>");
+  window._probeSample=s;
+ }).catch(()=>pop.setContent("<div class='text-xs p-1'>HWSD endpoint unreachable.</div>"))
+ .finally(()=>{_probeBusy=false;});
+}
+function probeToLab(){
+ const s=window._probeSample;if(!s)return;
+ document.getElementById("lab-ph").value=s.ph;
+ if(s.om_pct)document.getElementById("lab-om").value=s.om_pct;
+ applyLab({manual:false,src:s.source});
+ map.closePopup();
+}
+
+/* ═══════════════ SPEC-6 · GEOMETRY ENGINE (single-pass geodesic, memoized) ═══════════════ */
+function ringAreaM2(ll){const R=6378137,d=Math.PI/180;let s=0;for(let i=0;i<ll.length;i++){const a=ll[i],b=ll[(i+1)%ll.length];s+=(b.lng-a.lng)*d*(2+Math.sin(a.lat*d)+Math.sin(b.lat*d));}return Math.abs(s*R*R/2);}
+const fmtHa=m2=>(m2/1e4).toLocaleString(undefined,{maximumFractionDigits:2})+" ha";
+const fmtAc=m2=>(m2/4046.8564224).toLocaleString(undefined,{maximumFractionDigits:2})+" ac";
+const fnum=(x,d=1)=>x.toLocaleString(undefined,{maximumFractionDigits:d});
+function aoiM2(a){if(!a.dirty&&a._m2!=null)return a._m2;a._m2=ringAreaM2(a.poly.getLatLngs()[0]);a.dirty=false;return a._m2;}  /* cached: recompute only on vertex mutation */
+
+/* ═══════════════ POLYGON ENGINE ═══════════════ */
+map.on("click",e=>{if(state.draw){state.draw.pts.push(e.latlng);rebuildDraft();return;}probeSoil(e.latlng);});
+map.on("dblclick",e=>{if(state.draw){if(e.originalEvent)L.DomEvent.stop(e.originalEvent);finishDraw();}});
+function startDraw(){cancelDraw();state.draw={pts:[],layer:L.layerGroup().addTo(map)};showDraw(true);map.doubleClickZoom.disable();}
+function rebuildDraft(){const d=state.draw;d.layer.clearLayers();d.pts.forEach(p=>L.marker(p,{icon:dotIcon(),interactive:false,keyboard:false}).addTo(d.layer));if(d.pts.length>1)L.polyline(d.pts,{color:"#f59e0b",weight:2,dashArray:"6 6"}).addTo(d.layer);}
+function finishDraw(){const d=state.draw;if(!d)return;if(d.pts.length<3){alert("Need at least 3 corners.");return;}createAoi(d.pts.slice(),"AOI "+state.seq++);d.layer.remove();state.draw=null;showDraw(false);map.doubleClickZoom.enable();}
+function cancelDraw(){if(state.draw)state.draw.layer.remove();state.draw=null;showDraw(false);map.doubleClickZoom.enable();}
+function showDraw(on){["btn-finish","btn-cancel","draw-hint"].forEach(id=>document.getElementById(id).classList.toggle("hidden",!on));document.getElementById("btn-draw").classList.toggle("hidden",on);}
+const dotIcon=()=>L.divIcon({className:"draw-dot",iconSize:[10,10]});
+const PALETTE=["#34d399","#38bdf8","#f472b6","#facc15","#a78bfa","#fb923c"];
+function demoPlot(){createAoi([[2.0481,45.3166],[2.0486,45.3198],[2.0449,45.3203],[2.0443,45.3170]].map(p=>L.latLng(p[0],p[1])),"Demo Block "+state.seq++);}
+function createAoi(latlngs,name){const color=PALETTE[state.aois.length%PALETTE.length];
+ const poly=L.polygon(latlngs,{color,weight:2,fillColor:color,fillOpacity:.15}).addTo(map);
+ const a={id:"a"+state.seq+Date.now(),name,color,poly,handles:null,mids:[],editing:false,dirty:true,_m2:null};
+ poly.on("click",()=>selectAoi(a));state.aois.push(a);listAois();selectAoi(a);map.fitBounds(poly.getBounds().pad(.3));
+ const m2=aoiM2(a);
+ logEv("Traced vector polygon · Calculated area "+fmtHa(m2),{area:fmtHa(m2),flora:state.flora?state.flora.en:null,rating:healthScore(SOILS[state.soil]),src:"Leaflet geodesic engine"});
+ const autoBox=document.getElementById("lab-auto-aoi");
+ if(autoBox&&autoBox.checked&&!state.labManual)autoLab(a);}
+function setEditable(a,on){if(a.handles){a.handles.remove();a.handles=null;a.mids=[];}a.editing=on;if(!on)return;
+ a.handles=L.layerGroup().addTo(map);const ll=a.poly.getLatLngs()[0];
+ ll.forEach((p,i)=>{const m=L.marker(p,{draggable:true,icon:L.divIcon({className:"vertex-marker",iconSize:[14,14]}),zIndexOffset:1000}).addTo(a.handles);
+  m.on("drag",()=>{ll[i]=m.getLatLng();a.poly.setLatLngs(ll);a.dirty=true;moveMids(a);updateStats();});
+  m.on("click",e=>{if(e.originalEvent&&e.originalEvent.shiftKey)dropVertex(a,i);});
+  m.on("contextmenu",e=>{if(e.originalEvent)L.DomEvent.stop(e.originalEvent);dropVertex(a,i);});});
+ for(let i=0;i<ll.length;i++)addMid(a,i);}
+function addMid(a,i){const m=L.marker([0,0],{icon:L.divIcon({className:"mid-marker",iconSize:[8,8]}),zIndexOffset:900}).addTo(a.handles);
+ m.on("click",()=>{const ll=a.poly.getLatLngs()[0];ll.splice(i+1,0,m.getLatLng());a.poly.setLatLngs(ll);a.dirty=true;setEditable(a,true);updateStats();});
+ a.mids.push(m);moveMids(a);}
+function moveMids(a){const ll=a.poly.getLatLngs()[0];if(!a.mids)return;a.mids.forEach((m,i)=>{const p=ll[i],q=ll[(i+1)%ll.length];m.setLatLng([(p.lat+q.lat)/2,(p.lng+q.lng)/2]);});}
+function dropVertex(a,i){const ll=a.poly.getLatLngs()[0];if(ll.length<=3){alert("Keep at least 3 vertices.");return;}ll.splice(i,1);a.poly.setLatLngs(ll);a.dirty=true;setEditable(a,true);updateStats();}
+function selectAoi(a){state.selected=a;state.aois.forEach(x=>{const on=x===a;x.poly.setStyle({weight:on?3:2,fillOpacity:on?.22:.15});if(x!==a&&x.editing)setEditable(x,false);});updateStats();listAois();}
+function updateStats(){document.getElementById("stat-count").textContent=state.aois.length;const a=state.selected;
+ if(!a){document.getElementById("stat-ha").textContent="—";document.getElementById("stat-ac").textContent="select / draw a polygon";renderSim();return;}
+ const m2=aoiM2(a);document.getElementById("stat-ha").textContent=fmtHa(m2);
+ document.getElementById("stat-ac").textContent=fmtAc(m2)+" · "+fnum(m2,0)+" m²";
+ const row=document.querySelector(`[data-aoi="${a.id}"] .aoi-area`);if(row)row.textContent=fmtHa(m2);renderSim();}
+function listAois(){const box=document.getElementById("aoi-list");box.innerHTML="";
+ if(!state.aois.length){box.innerHTML='<div class="text-center text-slate-600 text-xs py-4">No areas yet — draw one or load the demo plot.</div>';return;}
+ state.aois.forEach(a=>{const on=a===state.selected;const el=document.createElement("div");el.dataset.aoi=a.id;
+  el.className="rounded-lg border p-2.5 mb-1.5 text-sm cursor-pointer "+(on?"border-emerald-600 bg-emerald-950/40":"border-slate-800 bg-slate-900 hover:border-slate-600");
+  el.innerHTML=`<div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:${a.color}"></span><b>${a.name}</b><span class="flex-1"></span><span class="aoi-area text-emerald-300 font-mono text-xs">${fmtHa(aoiM2(a))}</span></div>
+   <div class="mt-1.5 flex gap-1.5 text-[11px]"><button class="px-2 py-0.5 rounded bg-slate-800 hover:bg-emerald-700" data-act="edit">${a.editing?"✔ done":"✎ vertices"}</button>
+   <button class="px-2 py-0.5 rounded bg-slate-800 hover:bg-sky-700" data-act="zoom">⌖</button>
+   <button class="px-2 py-0.5 rounded bg-slate-800 hover:bg-red-800 ml-auto" data-act="del">✕</button></div>`;
+  el.onclick=ev=>{const act=ev.target.dataset.act;
+   if(act==="edit"){setEditable(a,!a.editing);listAois();return;}
+   if(act==="zoom"){map.fitBounds(a.poly.getBounds().pad(.4));return;}
+   if(act==="del"){if(a.handles)a.handles.remove();a.poly.remove();state.aois=state.aois.filter(x=>x!==a);if(state.selected===a)state.selected=state.aois[0]||null;listAois();updateStats();logEv("Deleted AOI "+a.name);return;}
+   selectAoi(a);};
+  box.appendChild(el);});}
+function toggleLeft(){document.getElementById("left").classList.toggle("-translate-x-full");document.getElementById("left-scrim").classList.toggle("hidden");}
+function toggleRight(){document.getElementById("right").classList.toggle("translate-x-full");}
+async function pingApi(){const base=apiBase||location.origin;try{const r=await fetch(base+"/healthz");if(!r.ok)throw 0;document.getElementById("api-led").className="w-2 h-2 rounded-full bg-emerald-500";document.getElementById("api-text").textContent="API online";}catch{document.getElementById("api-led").className="w-2 h-2 rounded-full bg-slate-600";document.getElementById("api-text").textContent="API offline";}}
+pingApi();
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SEED CATALOG — Somali Flora Field-Manual schema (verbatim):
+   somali_name, scientific_name, english_name, seasonal_behavior,
+   fruit_output, planting_care, optimal_soil_ph, what_to_avoid
+════════════════════════════════════════════════════════════════════════ */
+const NATIVE_TREES = [
+ {"somali_name":"Gob","scientific_name":"Ziziphus mauritiana","english_name":"Jujube / Ber","seasonal_behavior":"Fruiting season peaks from December to February; highly drought-resilient.","fruit_output":"Produces small, sweet, edible orange-brown berries; high in Vitamin C.","planting_care":"Requires full sun, minimal weeding once established; benefits from early structural pruning.","optimal_soil_ph":"6.0 - 8.5","what_to_avoid":"Avoid waterlogged soils and over-irrigation, which easily trigger fatal root rot."},
+ {"somali_name":"Garas","scientific_name":"Dobera glabra","english_name":"Garas","seasonal_behavior":"Evergreen canopy; retains leaves and fruits even during intense dry seasons.","fruit_output":"Yields bitter-sweet edible seeds that serve as a critical emergency famine food.","planting_care":"Requires deep soil profiles to accommodate its massive taproot; protect seedlings from livestock browsing.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid heavy structural pruning during severe droughts; do not plant in shallow, rocky bedrock layers."},
+ {"somali_name":"Galool","scientific_name":"Acacia bussei","english_name":"Chew-stick Acacia","seasonal_behavior":"Deciduous; flowers immediately post-rain and drops leaves during extreme dry spells.","fruit_output":"Produces highly nutritious seed pods favored by camels and goats; no direct human fruit consumption.","planting_care":"Direct seeding is preferred to avoid taproot deformation; requires spacious spacing.","optimal_soil_ph":"6.0 - 8.0","what_to_avoid":"Avoid planting near shallow building foundations due to widespread lateral roots."},
+ {"somali_name":"Qurac","scientific_name":"Acacia tortilis","english_name":"Umbrella Thorn","seasonal_behavior":"Classic umbrella canopy behavior; highly adapted to erratic, low-rainfall zones.","fruit_output":"Produces spirally twisted pods that are highly valued as an intensive rangeland fodder source.","planting_care":"Requires scarification of seeds for uniform germination; highly effective for sand dune stabilization.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid overwatering seedlings during their first 3 months; do not plant in areas prone to seasonal flash floods."},
+ {"somali_name":"Cadaad","scientific_name":"Acacia senegal","english_name":"Gum Arabic Tree","seasonal_behavior":"Tapped for resin seasonally during dry months; drops foliage when water-stressed.","fruit_output":"Produces valuable Gum Arabic resin; pods are thin, flat, and used for animal feed.","planting_care":"Thrives on dry sandy hillsides; requires excellent drainage and thrives on minimal inputs.","optimal_soil_ph":"6.0 - 8.0","what_to_avoid":"Avoid high-humidity coastal zones which severely restrict natural gum resin production."},
+ {"somali_name":"Dhamas","scientific_name":"Conocarpus lancifolius","english_name":"Dhamas","seasonal_behavior":"Fast-growing evergreen tree; exhibits high transpiration rates when water is available.","fruit_output":"Non-edible scale-like cone fruits; grown exclusively for premier structural timber and windbreaks.","planting_care":"Requires initial access to high water tables or continuous riverine irrigation in year one.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid prolonged, complete droughts during the first 12 months after transplanting."},
+ {"somali_name":"Dayib","scientific_name":"Juniperus excelsa","english_name":"African Pencil Cedar","seasonal_behavior":"Evergreen conifer; slow-growing, highly localized to cool highland microclimates.","fruit_output":"Produces small, dark blue berry-like cones that contain seeds; not for human consumption.","planting_care":"Must be planted in highland slopes with mist access; requires protection from wood-cutters.","optimal_soil_ph":"5.5 - 7.5","what_to_avoid":"Avoid planting in hot, humid coastal or low-altitude inland desert plains."},
+ {"somali_name":"Yagcar","scientific_name":"Boswellia frereana","english_name":"King of Frankincense","seasonal_behavior":"Deciduous; custom-adapted to clinging onto vertical limestone cliffs; tapped seasonally.","fruit_output":"Yields world-famous Maydi frankincense resin; fruits are small, dry capsules.","planting_care":"Requires specialized propagation from cuttings; thrives on steep, rocky limestone formations.","optimal_soil_ph":"7.0 - 8.5","what_to_avoid":"Avoid stagnant root moisture, heavy clay media, or flat, poorly drained soil plots."},
+ {"somali_name":"Dheddin","scientific_name":"Commiphora myrrha","english_name":"Myrrh Tree","seasonal_behavior":"Spiny, small desert tree; exudes precious resin naturally or via tapping in dry seasons.","fruit_output":"Exudes high-grade medicinal Myrrh resin; produces small, oval drupe fruits.","planting_care":"Extremely drought-tolerant; easily cultivated on stony, shallow desert soils from cuttings.","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Avoid planting in heavy alluvial riverine silt or waterlogged agricultural valleys."},
+ {"somali_name":"Madheedh","scientific_name":"Cordia sinensis","english_name":"Grey-leaved Sauce","seasonal_behavior":"Multi-stemmed shrub or tree; flowers and fruits multiple times a year following brief rains.","fruit_output":"Yields bright orange, sticky, highly sweet edible berries that are collected by nomads.","planting_care":"Requires pruning of multiple base suckers to train it into an upright, manageable tree form.","optimal_soil_ph":"6.0 - 8.0","what_to_avoid":"Avoid frost-prone mountain peaks; do not over-fertilize with synthetic commercial fertilizers."},
+ {"somali_name":"Gud / Yicib","scientific_name":"Cordeauxia edulis","english_name":"Yeheb Nut","seasonal_behavior":"Drought-adapted desert bush; drops leaves only during severe, multi-year droughts.","fruit_output":"Produces highly nutritious, sweet, oil-rich oval nuts that are boiled or eaten raw.","planting_care":"Extremely sensitive taproot; must be direct-seeded in deep, red desert sands (Haud region).","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Avoid heavy clay soils, waterlogging, and transplanting seedlings out of nursery pots."},
+ {"somali_name":"Caday","scientific_name":"Salvadora persica","english_name":"Toothbrush Tree","seasonal_behavior":"Evergreen desert shrub with weeping branches; highly active year-round growth.","fruit_output":"Produces small, translucent pink berries eaten fresh or dried; leaves serve as salty camel forage.","planting_care":"Highly salt-tolerant; thrives in areas where other trees die from high groundwater salinity.","optimal_soil_ph":"6.5 - 9.0","what_to_avoid":"Avoid applying high-nitrogen chemical inputs, which reduce the structural quality of the roots."},
+ {"somali_name":"Baar","scientific_name":"Hyphaene compressa","english_name":"Doum Palm","seasonal_behavior":"Dichotomously branched palm tree; exhibits slow, continuous growth along watercourses.","fruit_output":"Produces hard, edible, gingerbread-flavored brown fruits; leaves used widely for weaving.","planting_care":"Requires shallow alluvial water access; soak the large seeds for 48 hours before planting.","optimal_soil_ph":"6.0 - 8.5","what_to_avoid":"Avoid placing young seedlings under complete canopy shade; requires full, blazing sunlight."},
+ {"somali_name":"Raqay/Xamar","scientific_name":"Tamarindus indica","english_name":"Tamarind","seasonal_behavior":"Large, slow-growing evergreen tree; highly resilient along dry riverbeds (Toggas).","fruit_output":"Yields brittle brown pods containing sour, sticky fruit pulp used for local cooking and juices.","planting_care":"Provide initial shade canopy for seedlings; requires extensive structural space to mature.","optimal_soil_ph":"5.5 - 7.5","what_to_avoid":"Avoid shallow soil beds with hard caliche layers that stunt the tree's long-term lifecycle."},
+ {"somali_name":"Tugaar","scientific_name":"Acacia nilotica","english_name":"Egyptian Thorn","seasonal_behavior":"Thrives in seasonally flooded depressions; drops leaves when dry season hits.","fruit_output":"Produces long, beaded grey pods rich in tannins, used for leather tanning and local medicine.","planting_care":"Can tolerate temporary waterlogging and heavy black cotton soils better than most acacias.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid planting in highly acidic soils; protect pods from over-consumption by small livestock."},
+ {"somali_name":"Sogsog","scientific_name":"Acacia etbaica","english_name":"Sogsog","seasonal_behavior":"Thrives on rocky slopes and ridges, especially in northern semi-arid rangelands.","fruit_output":"Produces straight, flat reddish-brown seed pods; excellent woody browse for goats.","planting_care":"Requires rock-clearance during initial planting; extremely useful for controlling hill erosion.","optimal_soil_ph":"6.5 - 8.2","what_to_avoid":"Avoid flat plains with poor drainage; do not overwater once the root structure has hardened."},
+ {"somali_name":"Qansax","scientific_name":"Acacia reficiens","english_name":"False Umbrella Thorn","seasonal_behavior":"Shrub or small tree forming dense thickets in heavily degraded rangeland zones.","fruit_output":"Produces small, flat pods; provides crucial survival browse during severe dry seasons.","planting_care":"Requires wide spacing to avoid forming impenetrable thorny barriers in managed pastures.","optimal_soil_ph":"6.0 - 8.5","what_to_avoid":"Avoid planting near main walking paths or active human village borders due to aggressive thorns."},
+ {"somali_name":"Xarar","scientific_name":"Terminalia spinosa","english_name":"Spiny Terminalia","seasonal_behavior":"Distinct layered branching structure; highly drought-resistant desert species.","fruit_output":"Produces small, flat red-purple winged fruits; timber is extraordinarily hard and termite-resistant.","planting_care":"Propagate via carefully monitored seeds; ensure soil is well-drained and sandy.","optimal_soil_ph":"6.0 - 8.0","what_to_avoid":"Avoid waterlogged clay basins; do not harvest young trees prematurely due to their slow growth rate."},
+ {"somali_name":"Hareeri","scientific_name":"Terminalia prunioides","english_name":"Purple-pod Cluster-leaf","seasonal_behavior":"Deciduous; bursts into a vivid display of plum-colored seed pods after rain cycles.","fruit_output":"Produces decorative, dark purple winged fruits; timber is used for high-durability building poles.","planting_care":"Requires minimal maintenance after year two; performs best on gravelly soils or hill slopes.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid low-lying, swampy soils; protect young emerging saplings from aggressive camel grazing."},
+ {"somali_name":"Dhuur","scientific_name":"Tamarix aphylla","english_name":"Athel Tamarisk","seasonal_behavior":"Evergreen; fast-growing tree with pine-like needles that exude salt crystals.","fruit_output":"Produces tiny, non-edible capsule seeds; used extensively for perimeter desert windbreaks.","planting_care":"Highly drought and salt-tolerant; easily propagated via direct hardwood stem cuttings.","optimal_soil_ph":"7.0 - 9.5","what_to_avoid":"Avoid planting near sensitive crop fields, as its salty leaf litter alters surface soil chemistry."},
+ {"somali_name":"Yaaq","scientific_name":"Adansonia digitata","english_name":"Baobab","seasonal_behavior":"Massive trunk that stores water; drops leaves completely during the long dry season.","fruit_output":"Produces large woody pods containing dry, powdery, highly nutritious Vitamin-C rich pulp.","planting_care":"Requires immense physical space; plant in deep, well-draining soils away from structures.","optimal_soil_ph":"5.5 - 8.0","what_to_avoid":"Avoid heavy, compact clay basins that hold water and cause sudden trunk collapse from rot."},
+ {"somali_name":"Higlo / Quud","scientific_name":"Balanites aegyptiaca","english_name":"Desert Date","seasonal_behavior":"Evergreen with long green thorns; continues fruit production deep into dry cycles.","fruit_output":"Yields date-like edible fruits with a bitter-sweet pulp; seeds contain highly valuable oil.","planting_care":"Slow starter but extremely hardy; use mechanical scarification on the tough seed shells.","optimal_soil_ph":"6.0 - 8.5","what_to_avoid":"Avoid planting in highly acidic mountain soils; protect handlers from long, sharp structural thorns."},
+ {"somali_name":"Xamur","scientific_name":"Ficus sycomorus","english_name":"Sycamore Fig","seasonal_behavior":"Large, spreading riverine tree; produces massive flushes of fruits along its main branches.","fruit_output":"Yields clusters of sweet, edible wild figs that turn yellow-red when fully ripe.","planting_care":"Requires a high water table; best planted along permanent river banks or irrigated canals.","optimal_soil_ph":"6.0 - 8.2","what_to_avoid":"Avoid dry, upland rangelands far from water sources; do not plant near domestic sewage pipes."}];
+const FRUIT_GROUPS = [
+ ["🌊 Riverine & Irrigated","g1",[
+  {"somali_name":"Cambe","scientific_name":"Mangifera indica","english_name":"Mango","seasonal_behavior":"Main harvest flushes occur from May to July; triggered by dry spells followed by heat.","fruit_output":"Produces large, fleshy, sweet stone fruits; premium high-value commercial cash crop.","planting_care":"Apply deep, thorough drip irrigation at the base; prune internal branches for air circulation.","optimal_soil_ph":"5.5 - 7.5","what_to_avoid":"Avoid overhead sprinkler irrigation during flowering, which spreads destructive anthracnose fungus."},
+  {"somali_name":"Babbaay","scientific_name":"Carica papaya","english_name":"Papaya","seasonal_behavior":"Continuous, year-round flowering and fruiting under stable irrigation conditions.","fruit_output":"Produces elongated or round sweet fruits with bright orange flesh and black seeds.","planting_care":"Requires heavy nitrogen feeding and secure staking to support the weight of heavy fruit loads.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid standing water or poor drainage; root rot will kill the plant within 48 hours."},
+  {"somali_name":"Liin Macaan","scientific_name":"Citrus sinensis","english_name":"Sweet Orange","seasonal_behavior":"Cyclical seasonal flushes; heavily dependent on structured irrigation schedules.","fruit_output":"Produces sweet, juicy citrus fruits; highly marketable across all urban Somali centers.","planting_care":"Requires regular copper fungicide spraying and zinc/iron micronutrient supplementation.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid planting too deep; graft union below soil line causes fatal gummosis."},
+  {"somali_name":"Liin Dhanaan","scientific_name":"Citrus aurantifolia","english_name":"Lime","seasonal_behavior":"Near year-round production with peak flushes following seasonal rainfall lines.","fruit_output":"Produces small, highly acidic, thin-skinned citrus fruits used daily in Somali cuisine.","planting_care":"Provide light, frequent watering intervals; consistently prune vertical water suckers.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid poorly drained clay soils or exposed sites with harsh, hot desert winds."},
+  {"somali_name":"Bombelmo","scientific_name":"Citrus paradisi","english_name":"Grapefruit","seasonal_behavior":"Seasonal ripening; requires high heat accumulation to develop optimal sugars.","fruit_output":"Large, tart to sweet-tart citrus fruits with yellow or ruby pink flesh panels.","planting_care":"Requires high potassium fertilization during fruit development for thin skins.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid establishing plots in high-wind corridors without a perimeter windbreak."},
+  {"somali_name":"Seytuun","scientific_name":"Psidium guajava","english_name":"Guava","seasonal_behavior":"Produces multiple heavy crops per year; highly adaptive and fast-growing.","fruit_output":"Produces round fruits with pink or white flesh; highly aromatic and fiber-rich.","planting_care":"Perform severe annual pruning to induce the new wood where fruits set.","optimal_soil_ph":"5.0 - 8.2","what_to_avoid":"Avoid over-fertilizing with pure nitrogen — massive canopy, zero fruit."},
+  {"somali_name":"Timir","scientific_name":"Phoenix dactylifera","english_name":"Date Palm","seasonal_behavior":"Seasonal summer ripening; needs blistering heat and zero rain at fruit set.","fruit_output":"Clusters of highly sweet, calorie-dense drupes; thrives in northern oasis zones.","planting_care":"Propagate exclusively from side offshoots to guarantee female fruit-bearing trees.","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Avoid humidity or rain in the final ripening phase — ruins the fruit."},
+  {"somali_name":"Naarajiin","scientific_name":"Cocos nucifera","english_name":"Coconut Palm","seasonal_behavior":"Continuous year-round production; limited to humid coastal strips.","fruit_output":"Large fibrous nuts filled with nutritious coconut water and thick edible white meat.","planting_care":"Salt-spray tolerant; open sun and deep sandy alluvial profiles.","optimal_soil_ph":"5.5 - 8.0","what_to_avoid":"Avoid heavy inland clays disconnected from the water table."},
+  {"somali_name":"Anuune Weyn","scientific_name":"Annona muricata","english_name":"Soursop","seasonal_behavior":"Sensitive to dry winds; flowers and fruits in warm, humid riverine zones.","fruit_output":"Large green spiky-skinned fruits with soft, aromatic acidic white pulp.","planting_care":"Wind protection and heavy organic mulching to preserve shallow root moisture.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid alkaline soils (pH > 7.5): severe lime-induced chlorosis."},
+  {"somali_name":"Anuune Yare","scientific_name":"Annona squamosa","english_name":"Sweetsop / Sugar-apple","seasonal_behavior":"Deciduous under water stress; fruits ripen rapidly in hot, dry weather.","fruit_output":"Knobby, scale-like green fruits with sweet, custard-like internal segments.","planting_care":"Hand-pollination dramatically increases fruit set in gardens.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid waterlogging at ripening — fruits split open prematurely."},
+  {"somali_name":"Bibbo","scientific_name":"Anacardium occidentale","english_name":"Cashew","seasonal_behavior":"Flowers in the dry season; fruits mature within 90 days of flowering.","fruit_output":"Fleshy red/yellow cashew apple topped with the true shelled nut.","planting_care":"Thrives on poor sandy soils where other fruit trees fail; minimal inputs.","optimal_soil_ph":"5.0 - 7.0","what_to_avoid":"Avoid heavy clays or any low-lying seasonally flooded zone."},
+  {"somali_name":"Muus","scientific_name":"Musa acuminata","english_name":"Banana","seasonal_behavior":"Continuous production; massive uninterrupted daily water demand.","fruit_output":"Large hanging bunches; historically Somalia's premium export crop.","planting_care":"Heavy regular potassium + continuous wind protection shields.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid saline irrigation water — exceptionally low salt tolerance."}]],
+ ["🏜 Indigenous Wild Desert Fruits","g2",[
+  {"somali_name":"Dhafaruur","scientific_name":"Grewia tenax","english_name":"White Crossberry","seasonal_behavior":"Extremely drought-resistant; fruits ripen quickly after brief rains.","fruit_output":"Small, glossy, iron-rich orange berries highly favored by pastoralists.","planting_care":"Propagate by seeds or cuttings; thrives in rocky degraded rangeland.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid over-watering and heavily shaded locations."},
+  {"somali_name":"Murcood","scientific_name":"Grewia villosa","english_name":"Mallow-leaved Crossberry","seasonal_behavior":"Deciduous desert shrub; sheds leaves during the Jilaal dry season.","fruit_output":"Small, hard-shelled sweet reddish berries with crunchy edible texture.","planting_care":"Excellent for soil conservation on desert slopes; virtually no maintenance.","optimal_soil_ph":"6.0 - 8.2","what_to_avoid":"Avoid dense compact planting; requires open spacing for sparse rain capture."}]],
+ ["🍍 Classic Tropical Potential","g3",[
+  {"somali_name":"Xanafeef","scientific_name":"Passiflora edulis","english_name":"Passion Fruit","seasonal_behavior":"Vines fruit within a year of planting; continuous cropping under irrigation.","fruit_output":"Round purple or yellow fruits packed with aromatic tart edible seeds.","planting_care":"Strong trellis system for vertical support; prune against overcrowding.","optimal_soil_ph":"6.0 - 6.8","what_to_avoid":"Avoid waterlogging and highly alkaline soils — stunts vine development."},
+  {"somali_name":"Ananas","scientific_name":"Ananas comosus","english_name":"Pineapple","seasonal_behavior":"12–24 months to fruit; requires high temperatures year-round.","fruit_output":"A single large, sweet, juicy composite tropical fruit per plant.","planting_care":"Highly porous sandy loams; feed with high potassium and iron.","optimal_soil_ph":"4.5 - 6.0","what_to_avoid":"Avoid alkaline or neutral soils — severe iron chlorosis and death."},
+  {"somali_name":"Geed Jackfrut","scientific_name":"Artocarpus heterophyllus","english_name":"Jackfruit","seasonal_behavior":"Slow-maturing evergreen; fruits develop directly on the main trunk.","fruit_output":"Largest tree-borne fruits globally, filled with sweet yellow bulbs.","planting_care":"Deep alluvial soils; sensitive non-transplantable taproot.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid disturbing the root ball after nursery transplant."},
+  {"somali_name":"Rambutan","scientific_name":"Nephelium lappaceum","english_name":"Rambutan","seasonal_behavior":"High humidity and warmth; strictly tropical behavior.","fruit_output":"Oval bright-red hairy-spined fruits with sweet translucent flesh.","planting_care":"Deep organic mulch and windbreaks to mimic rainforest understory.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid dry desert winds and saline water — immediate leaf scorch."},
+  {"somali_name":"Layji","scientific_name":"Litchi chinensis","english_name":"Lychee","seasonal_behavior":"Brief cool dry spell triggers flowering, then hot humid growth.","fruit_output":"Clusters of rough red-shelled fruits with sweet jelly-like white flesh.","planting_care":"Wind protection; consistent moisture during fruit-set.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid lime soils and any severe water stress during fruiting."},
+  {"somali_name":"Hingood","scientific_name":"Averrhoa carambola","english_name":"Star Fruit","seasonal_behavior":"Fast-growing; fruits heavily in warm humid microclimates.","fruit_output":"Distinct 5-angled crispy fruits forming perfect stars when sliced.","planting_care":"Windbreaks for brittle branches; regular balanced feeds.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid exposed windy locations and lime-rich soils."},
+  {"somali_name":"Geed Dragon","scientific_name":"Selenicereus undatus","english_name":"Dragon Fruit / Pitaya","seasonal_behavior":"Climbing cactus; night flowers in hot humid summer months.","fruit_output":"Striking pink fruits, white or red speckled flesh; high market value.","planting_care":"Robust climbing post topped with a structural support ring.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid overwatering (rots stems) and deep shade."},
+  {"somali_name":"Mangosteen","scientific_name":"Garcinia mangostana","english_name":"Mangosteen","seasonal_behavior":"Ultra-slow; strictly ultra-tropical climate requirement.","fruit_output":"Purple-shelled fruits with snow-white sweet segments.","planting_care":"Complete shade for seedlings the first 2–3 years.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid any exposure below 4°C or dry sandy media."},
+  {"somali_name":"Sapodila","scientific_name":"Manilkara zapota","english_name":"Sapodilla","seasonal_behavior":"Wind-resistant evergreen; handles coastal heat exceptionally.","fruit_output":"Round brown-skinned fruits with sweet brown pear-textured flesh.","planting_care":"Drought-tolerant once established; wide soil profile tolerance.","optimal_soil_ph":"6.0 - 8.0","what_to_avoid":"Avoid immature picking — sticky bitter latex sap."},
+  {"somali_name":"Yaanyada Geedka","scientific_name":"Solanum betaceum","english_name":"Tamarillo / Tree Tomato","seasonal_behavior":"Fast short-lived woody shrub; continuous cropping.","fruit_output":"Egg-shaped reddish-orange tart fruits for sauces and fresh eating.","planting_care":"Shallow frequent watering; protection from structural winds.","optimal_soil_ph":"5.8 - 6.5","what_to_avoid":"Avoid standing water and frost; nematode-susceptible."}]],
+ ["⛰ Subtropical Highland Adaptive","g4",[
+  {"somali_name":"Peej / Piish","scientific_name":"Prunus persica","english_name":"Peach","seasonal_behavior":"Needs winter chill hours to break dormancy and set fruit.","fruit_output":"Sweet juicy fuzzy-skinned stone fruits; northern highland valleys.","planting_care":"Annual open-center bowl pruning for interior sunlight.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid frost pockets and poorly drained heavy clays."},
+  {"somali_name":"Tiin","scientific_name":"Opuntia ficus-indica","english_name":"Prickly Pear / Cactus Pear","seasonal_behavior":"Extremely drought-resilient; rocky degraded semi-arid terrain.","fruit_output":"Oval spine-covered fruits with sweet juicy red or yellow pulp.","planting_care":"Propagate from individual pad cuttings in dry rocky soils.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid over-irrigation and rich soils — fungal decay over fruit."},
+  {"somali_name":"Rummaan","scientific_name":"Punica granatum","english_name":"Pomegranate","seasonal_behavior":"Deciduous shrub; hot dry climate + cool winters; alkaline-tolerant.","fruit_output":"Thick-skinned red fruits packed with juicy tart antioxidant arils.","planting_care":"Minimal water once established; calcareous limestone soils fine.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid irregular watering during development — fruit skins split."},
+  {"somali_name":"Jiir","scientific_name":"Ficus carica","english_name":"Common Fig","seasonal_behavior":"Two distinct crops yearly (breba + main) under warmth.","fruit_output":"Soft sweet pear-shaped fruits with chewy skin and crunchy seeds.","planting_care":"Heavy size-management pruning; thick compost top-dressing.","optimal_soil_ph":"6.0 - 7.8","what_to_avoid":"Avoid excess nitrogen — fruit drop and rank leaf growth."},
+  {"somali_name":"Inab / Cinab","scientific_name":"Vitis vinifera","english_name":"Grape","seasonal_behavior":"Deciduous vine; clear seasonal shift + structured pruning to fruit.","fruit_output":"Hanging clusters of sweet berries, fresh or dried into raisins.","planting_care":"Horizontal wire trellises; prune away up to 90% of last year's wood.","optimal_soil_ph":"6.5 - 7.5","what_to_avoid":"Avoid overhead watering and humid enclosed zones (powdery mildew)."},
+  {"somali_name":"Saytuun Fureed","scientific_name":"Olea europaea","english_name":"Wild African Olive","seasonal_behavior":"Long-lived slow evergreen; native to northern mountain peaks.","fruit_output":"Small bitter oil-rich drupes for extraction or pickling.","planting_care":"Perfect drainage on rocky soils; minimal management once set.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid waterlogged basins and deep silt — roots need aeration."},
+  {"somali_name":"Lokwadin","scientific_name":"Eriobotrya japonica","english_name":"Loquat","seasonal_behavior":"Evergreen; autumn flowers, late-winter fruits.","fruit_output":"Clusters of oval yellow-orange sweet-tart fruits with large seeds.","planting_care":"Thin fruit clusters early for larger individual size.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid high nitrogen — invites destructive fire blight."},
+  {"somali_name":"Persimon","scientific_name":"Diospyros kaki","english_name":"Oriental Persimmon","seasonal_behavior":"Deciduous; fruits ripen on bare branches after leaf-drop.","fruit_output":"Bright orange glossy tomato-shaped fruits, honey-sweet flesh.","planting_care":"Well-drained loams; moderate consistent moisture.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid early harvest of astringent varieties — must be fully soft."},
+  {"somali_name":"Geed Tush","scientific_name":"Morus nigra","english_name":"Black Mulberry","seasonal_behavior":"Fast deciduous tree; heavy spring berry flushes.","fruit_output":"Dark purple sweet juicy aggregate berries (elongated blackberries).","planting_care":"Dormant stem cuttings propagate easily; wide soil tolerance.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid walk/driveway edges — dropped fruit stains permanently."}]],
+ ["🍎 Global Temperate Orchard (highland trials only)","g5",[
+  {"somali_name":"Tufaax","scientific_name":"Malus domestica","english_name":"Apple","seasonal_behavior":"Deciduous; requires winter chilling (low-chill variants exist).","fruit_output":"Crisp sweet or tart pome fruits; global commercial staple.","planting_care":"Structured pruning, cross-pollination pairing, pest netting.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid high-chill varieties in lowlands — fails to flower."},
+  {"somali_name":"Peer","scientific_name":"Pyrus communis","english_name":"European Pear","seasonal_behavior":"Deciduous; early spring flowers; temperate winter conditioning.","fruit_output":"Classic pear fruits harvested firm, ripened off-tree.","planting_care":"Horizontal branch training early for fruit spur development.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid spring overwatering — fire blight infections."},
+  {"somali_name":"Kuwinis","scientific_name":"Cydonia oblonga","english_name":"Quince","seasonal_behavior":"Deciduous; cold-winter tolerant with warm summers.","fruit_output":"Hard aromatic yellow fruits that must be cooked before eating.","planting_care":"Deep moist loams; light pruning for open canopy.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid alkaline soils — iron lockup, severe leaf bleaching."},
+  {"somali_name":"Aluub","scientific_name":"Prunus domestica","english_name":"Plum","seasonal_behavior":"Deciduous; blossoms before leafing in spring.","fruit_output":"Smooth-skinned sweet juicy drupes with a single pit.","planting_care":"Heavy early-summer thinning against branch breakage.","optimal_soil_ph":"6.0 - 6.8","what_to_avoid":"Avoid waterlogging — high root asphyxiation risk."},
+  {"somali_name":"Abrikoot","scientific_name":"Prunus armeniaca","english_name":"Apricot","seasonal_behavior":"Deciduous; very early flowers vulnerable to late frosts.","fruit_output":"Small velvety orange fruits with sweet firm aromatic flesh.","planting_care":"Excellent air drainage and a sunny open exposure.","optimal_soil_ph":"6.5 - 7.5","what_to_avoid":"Avoid humid climates — brown rot destroys the crop."},
+  {"somali_name":"Jeeriga","scientific_name":"Prunus avium","english_name":"Sweet Cherry","seasonal_behavior":"High-chill winters + dry summer ripening windows.","fruit_output":"Long-stalked sweet red or yellow stone fruits.","planting_care":"Exceptional deep fertile loam; highly salt-sensitive.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid rain at harvest — skins split instantly."},
+  {"somali_name":"Strawberi","scientific_name":"Fragaria x ananassa","english_name":"Strawberry","seasonal_behavior":"Low perennial herb; fruits via runner cycles in spring/summer.","fruit_output":"Red sweet aggregate fruits with external seeds.","planting_care":"Raised beds with plastic or straw mulch under fruits.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid fields cropped with tomatoes/potatoes (Verticillium)."},
+  {"somali_name":"Hulbood","scientific_name":"Rubus fruticosus","english_name":"Blackberry","seasonal_behavior":"Perennial roots, biennial thorny canes.","fruit_output":"Deep black sweet-tart aggregate berries; very productive.","planting_care":"Cut spent fruiting canes to ground after summer harvest.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid untrellised wild canes — unmanageable thorn thickets."},
+  {"somali_name":"Rasberi","scientific_name":"Rubus idaeus","english_name":"Raspberry","seasonal_behavior":"Cool-temperate specialist; tropical heat-spike sensitive.","fruit_output":"Hollow delicate red or yellow sweet berries.","planting_care":"Consistent moisture; organic-rich aerated soils.","optimal_soil_ph":"5.6 - 6.2","what_to_avoid":"Avoid heavy clays and drying winds."},
+  {"somali_name":"Bluberi","scientific_name":"Vaccinium corymbosum","english_name":"Highbush Blueberry","seasonal_behavior":"Acid-loving deciduous shrub; highly specific soil needs.","fruit_output":"Small blue antioxidant berries with dusty-white bloom skin.","planting_care":"Heavy elemental sulfur + peat moss bed acidification.","optimal_soil_ph":"4.5 - 5.2","what_to_avoid":"Avoid alkaline soils or limy water — rapid chlorosis death."},
+  {"somali_name":"Cranberi","scientific_name":"Vaccinium macrocarpon","english_name":"Cranberry","seasonal_behavior":"Acidic peat-bog evergreen vine only.","fruit_output":"Firm sour red berries for juices and processing.","planting_care":"Specialized flood-management bog systems.","optimal_soil_ph":"4.0 - 5.0","what_to_avoid":"Avoid ordinary garden soils — dedicated bog architecture required."},
+  {"somali_name":"Kiwi","scientific_name":"Actinidia deliciosa","english_name":"Kiwifruit","seasonal_behavior":"Vigorous deciduous vine; male + female needed.","fruit_output":"Oval brown fuzzy fruits with bright green tangy-sweet flesh.","planting_care":"High-durability overhead T-bar trellises for vine weight.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid salty soils and winds that shred the large leaves."}]],
+ ["🍉 Melons & Vines","g6",[
+  {"somali_name":"Xabxab / Qashuraad","scientific_name":"Citrullus lanatus","english_name":"Watermelon","seasonal_behavior":"Fast 90-day annual vine; perfect for hot Somali sun profiles.","fruit_output":"Massive juicy green-skinned fruits with sweet red or yellow flesh.","planting_care":"Drip early; cut watering 2 weeks pre-harvest to boost sugars.","optimal_soil_ph":"6.0 - 6.8","what_to_avoid":"Avoid overhead water (powdery mildew) and fruit-set stress."},
+  {"somali_name":"Soodaan","scientific_name":"Cucumis melo","english_name":"Honeydew Melon","seasonal_behavior":"Annual vine; continuous heat + dry air in final ripening arc.","fruit_output":"Smooth pale-green rinded melons with sweet green flesh.","planting_care":"Rich compost at planting; spacing for honeybee access.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid cold-soil planting windows and late overwatering."},
+  {"somali_name":"Kantalub","scientific_name":"Cucumis melo var. cantalupensis","english_name":"Cantaloupe / Rockmelon","seasonal_behavior":"Rapid annual lifecycle; highly productive under arid irrigation.","fruit_output":"Netted-skin round melons with aromatic sweet orange flesh.","planting_care":"Plastic mulch sheets for soil heat and clean fruits.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid bee shortage — poor pollination means deformed fruits."}]],
+ ["🌴 Extended World Fruits","g7",[
+  {"somali_name":"Abukado","scientific_name":"Persea americana","english_name":"Avocado","seasonal_behavior":"Evergreen; 3–5 years to grafted bearing; strong highland fit.","fruit_output":"Oil-rich green fruits on long stems; export-grade crop.","planting_care":"Perfect drainage on deep loams; wind shelter at flowering.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid waterlogged clays — Phytophthora root death."},
+  {"somali_name":"Durian","scientific_name":"Durio zibethinus","english_name":"Durian","seasonal_behavior":"Strictly humid equatorial; single heavy seasonal flush.","fruit_output":"Large spiny aromatic pods — premium-priced in Asian markets.","planting_care":"Humid wind-sheltered blocks; deep humus-rich soil.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid dry wind corridors — flowers abort instantly."},
+  {"somali_name":"Longan","scientific_name":"Dimocarpus longan","english_name":"Longan","seasonal_behavior":"Subtropical flushes after cool dry trigger.","fruit_output":"Clusters of small translucent 'dragon-eye' fruits.","planting_care":"Manage water stress + relief cycles to induce flowering.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid alkaline irrigation regimes."},
+  {"somali_name":"Kharnub","scientific_name":"Ceratonia siliqua","english_name":"Carob","seasonal_behavior":"Slow drought-proof evergreen legume tree.","fruit_output":"Sweet dark pods — livestock feed and chocolate substitute.","planting_care":"Deep rocky soils; zero irrigation after year two.","optimal_soil_ph":"6.0 - 8.5","what_to_avoid":"Avoid heavy pruning of mature crowns."},
+  {"somali_name":"Lawz","scientific_name":"Prunus dulcis","english_name":"Almond","seasonal_behavior":"Early bloomer; dry-summer harvest specialist.","fruit_output":"Hulls split to reveal the in-shell kernel nut.","planting_care":"Full sun, deep well-drained calcareous soils.","optimal_soil_ph":"6.5 - 8.5","what_to_avoid":"Avoid spring rain at bloom — blossom blight."},
+  {"somali_name":"Fistuq","scientific_name":"Pistacia vera","english_name":"Pistachio","seasonal_behavior":"Needs hot dry summers + cool winters; alternate-bearing.","fruit_output":"Split-shell green kernels; male:female 1:8 orchard layout.","planting_care":"Extreme drainage demand; tolerate saline-tinged water better than most.","optimal_soil_ph":"7.0 - 7.8","what_to_avoid":"Avoid humid summers — Alternaria stains the crop."},
+  {"somali_name":"Jawz","scientific_name":"Juglans regia","english_name":"Walnut","seasonal_behavior":"High-chill deciduous nut tree.","fruit_output":"Round green husks drying to the classic two-valve shell.","planting_care":"Deep fertile loam + winter chill accumulation.","optimal_soil_ph":"6.5 - 7.5","what_to_avoid":"Avoid late-frost hollows and shallow water tables."},
+  {"somali_name":"Cherimoya","scientific_name":"Annona cherimola","english_name":"Cherimoya","seasonal_behavior":"Subtropical; mild-cool flowering trigger.","fruit_output":"Heart-shaped creamy custard fruit — 'the queen of Annonas'.","planting_care":"Hand-pollination lifts sets; wind shelter essential.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid frost and extreme dry heat during bloom."},
+  {"somali_name":"Rootig Kijiji","scientific_name":"Artocarpus altilis","english_name":"Breadfruit","seasonal_behavior":"Humid tropics; heavy seasonal starch producer.","fruit_output":"Large green starchy fruits roasted like bread.","planting_care":"Suckers propagate true-to-type; mulch generously.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid dry-season water stress — fruit drop."},
+  {"somali_name":"Caimito","scientific_name":"Chrysophyllum cainito","english_name":"Star Apple","seasonal_behavior":"Evergreen with purple-bronze flushes.","fruit_output":"Purple globes with milky milky-star pattern when sliced.","planting_care":"Deep alluvial soils, regular moisture rhythm.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid cold snaps below 3°C."}]],
+ ["🫐 Highland Berries & Vine Fruits","g8",[
+  {"somali_name":"Karant Madow","scientific_name":"Ribes nigrum","english_name":"Blackcurrant","seasonal_behavior":"Deciduous shrub; winter chill unlocks the spring berry flush.","fruit_output":"3–6 t/ha of deep-purple, vitamin-C-carrying berries.","planting_care":"Annually remove the oldest wood; keep an open, airy framework.","optimal_soil_ph":"6.0 - 6.8","what_to_avoid":"Avoid humid stagnant air (leaf spot) and prolonged heat waves."},
+  {"somali_name":"Karant Casaan","scientific_name":"Ribes rubrum","english_name":"Redcurrant","seasonal_behavior":"Cold-deciduous; early spring bloom on short spurs.","fruit_output":"2–5 t/ha of translucent ruby clusters for juices and jellies.","planting_care":"Train as cordons or open bushes; light summer tipping only.","optimal_soil_ph":"6.0 - 6.8","what_to_avoid":"Avoid uncovered fruiting — birds strip the crop in days."},
+  {"somali_name":"Guusberi","scientific_name":"Ribes uva-crispa","english_name":"Gooseberry","seasonal_behavior":"Thorny deciduous shrub; spring flush follows chill.","fruit_output":"4–6 t/ha of tart-sweet berries, excellent for processing.","planting_care":"Grow as half-standards to ease picking under the spines.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid waterlogged feet and powdery-mildew wall corners."},
+  {"somali_name":"Elderberi","scientific_name":"Sambucus nigra","english_name":"Elderberry","seasonal_behavior":"Hardy deciduous; creamy spring flower plates, autumn berries.","fruit_output":"5–15 t/ha of dark berries (syrup-grade); flowers also edible.","planting_care":"Coppice hard to 60 cm every winter for vigorous canes.","optimal_soil_ph":"5.5 - 7.0","what_to_avoid":"Avoid raw seed/wood parts (cyanogenic) — always cook the fruit."},
+  {"somali_name":"Fijoa","scientific_name":"Acca sellowiana","english_name":"Feijoa · Pineapple Guava","seasonal_behavior":"Evergreen subtropical; unusually tolerant of hot, dry summers.","fruit_output":"10–30 kg/tree of aromatic, guava-scented green fruits.","planting_care":"Minimal pruning; pair two cultivars for heavier cross-pollination.","optimal_soil_ph":"5.5 - 7.0","what_to_avoid":"Avoid leaving dropped fruit uncollected — fruit-fly reservoir."},
+  {"somali_name":"Fisalis","scientific_name":"Physalis peruviana","english_name":"Cape Gooseberry","seasonal_behavior":"Fast 90-day annual; genuinely heat-proficient on arid beds.","fruit_output":"5–8 t/ha of golden berries ripened inside papery husks.","planting_care":"Light staking; direct-sow or transplant into warm beds.","optimal_soil_ph":"5.5 - 6.8","what_to_avoid":"Avoid overhead water at ripening — mold forms inside husks.",sim:{kind:"crop",spacing:[1.0,0.5],seedKgHa:2,yieldT:[5,8],water:{mode:"crop",mm:500}}}]],
+ ["🥜 Global Nut Trees","g9",[
+  {"somali_name":"Makadamia","scientific_name":"Macadamia integrifolia","english_name":"Macadamia","seasonal_behavior":"Evergreen subtropical; grafted trees bear from year four.","fruit_output":"15–45 kg/tree of the world's premium dessert kernel.","planting_care":"Deep, well-drained loams; strict zinc monitoring program.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Avoid alkaline soils — instant zinc/iron lockout yellowing."},
+  {"somali_name":"Pekaam","scientific_name":"Carya illinoinensis","english_name":"Pecan","seasonal_behavior":"Large deciduous river-valley nut tree; long-lived.","fruit_output":"20–50 kg/tree of twin-lobed kernels in thin husks.","planting_care":"Deep alluvial soils; zinc foliar sprays each spring.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Avoid saline groundwater tables and root-zone compaction."},
+  {"somali_name":"Heyzlnat","scientific_name":"Corylus avellana","english_name":"Hazelnut","seasonal_behavior":"Deciduous multi-stem coppice; winter catkins.","fruit_output":"3–8 kg/bush of smooth round in-shell nuts.","planting_care":"Renew one old stem annually; wide coppice spacing.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Avoid drought-shock summers without irrigation backup."},
+  {"somali_name":"Brazil-nat","scientific_name":"Bertholletia excelsa","english_name":"Brazil Nut","seasonal_behavior":"Uber-canopy giant; old-growth experimental blocks only.","fruit_output":"10–30 kg/tree of heavy pods packed with selenium-rich nuts.","planting_care":"Require intact wild-bee pollination guilds; 20×20 m frames.","optimal_soil_ph":"5.0 - 6.5","what_to_avoid":"Avoid isolated plantation monoculture — pollination collapses."},
+  {"somali_name":"Kashtan","scientific_name":"Castanea sativa","english_name":"Sweet Chestnut","seasonal_behavior":"Deciduous; summer catkins, autumn spiny burrs.","fruit_output":"30–80 kg/tree of starchy roasting nuts.","planting_care":"Acidic siliceous soils; coppice or high-forest systems.","optimal_soil_ph":"4.5 - 6.0","what_to_avoid":"Avoid chalk and limestone soils — fatal iron chlorosis."},
+  {"somali_name":"Sayiin","scientific_name":"Vitellaria paradoxa","english_name":"Shea","seasonal_behavior":"Semi-arid African parkland giant; Sahel-to-Horn analogue.","fruit_output":"20–45 kg/tree of nuts yielding globally traded shea butter.","planting_care":"Protect through the 3-year juvenile gap from grazing.","optimal_soil_ph":"5.5 - 7.5","what_to_avoid":"Avoid waterlogged pans and long-season weed smothering."}]],
+];
+const CROPS_JSON = [
+ {"somali_name":"Masago","scientific_name":"Sorghum bicolor","english_name":"Sorghum","seasonal_behavior":"Gu' + Dumaal cycles (90–110 day varieties).","fruit_output":"0.8–2.5 t/ha grain + stover fodder.","planting_care":"Seeds 0.75×0.30 m; single weeding window week 3–5.","optimal_soil_ph":"5.5 - 8.5","what_to_avoid":"Late planting past the rain window; unguarded quelea birds.",sim:{kind:"crop",spacing:[0.75,0.30],seedKgHa:10,yieldT:[0.8,2.5],water:{mode:"crop",mm:500}}},
+ {"somali_name":"Galley","scientific_name":"Zea mays","english_name":"Maize","seasonal_behavior":"Irrigated Shabelle dher; year-round possible with water.","fruit_output":"2.0–5.0 t/ha irrigated; 0.8–1.5 rainfed (risky).","planting_care":"22 kg seed/ha, 0.75×0.25 m; N-split at V6 and tasselling.","optimal_soil_ph":"5.8 - 7.5","what_to_avoid":"Moisture stress at tasselling (halves yield).",sim:{kind:"crop",spacing:[0.75,0.25],seedKgHa:22,yieldT:[2.0,5.0],water:{mode:"crop",mm:650}}},
+ {"somali_name":"Simsim","scientific_name":"Sesamum indicum","english_name":"Sesame","seasonal_behavior":"Gu' main, 90-day.","fruit_output":"0.4–0.9 t/ha export cash crop.","planting_care":"4 kg seed/ha broadcast-drill 0.45×0.15; no weeding tolerance weeks 1–4.","optimal_soil_ph":"5.5 - 8.0","what_to_avoid":"Waterlogging 24 h+ (phytophthora collapse).",sim:{kind:"crop",spacing:[0.45,0.15],seedKgHa:4,yieldT:[0.4,0.9],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Digir","scientific_name":"Vigna unguiculata","english_name":"Cowpea / Beans","seasonal_behavior":"60-day quick cycle; intercrop-friendly.","fruit_output":"0.5–1.5 t/ha grain + nitrogen legacy.","planting_care":"18 kg/ha, 0.75×0.20; bruchid-proof storage bins.","optimal_soil_ph":"5.8 - 7.0","what_to_avoid":"Fungal spray neglect in humid spells.",sim:{kind:"crop",spacing:[0.75,0.20],seedKgHa:18,yieldT:[0.5,1.5],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Lowsa","scientific_name":"Arachis hypogaea","english_name":"Groundnut","seasonal_behavior":"Gu' plant, 100–110 day.","fruit_output":"0.5–1.2 t/ha pods; haulms are premium hay.","planting_care":"70 kg/ha pods, sandy loam, gypsum at flowering.","optimal_soil_ph":"5.5 - 7.0","what_to_avoid":"Compacted clays (pegging fails) and aflatoxin storage.",sim:{kind:"crop",spacing:[0.60,0.15],seedKgHa:70,yieldT:[0.5,1.2],water:{mode:"crop",mm:520}}},
+ {"somali_name":"Qamadi","scientific_name":"Triticum aestivum","english_name":"Bread Wheat","seasonal_behavior":"Seasonal cool-dry window crop; irrigated valleys.","fruit_output":"1.5–4.0 t/ha grain.","planting_care":"100–120 kg seed/ha drilled 0.20 m rows; rust scouting.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Late-sown heat stress at grain fill.",sim:{kind:"crop",spacing:[0.20,0.02],seedKgHa:110,yieldT:[1.5,4.0],water:{mode:"crop",mm:450},rowCrop:true}},
+ {"somali_name":"Shiciir","scientific_name":"Hordeum vulgare","english_name":"Barley","seasonal_behavior":"Short 90-day seasonal; more salt-tolerant than wheat.","fruit_output":"1.2–3.2 t/ha grain.","planting_care":"90 kg/ha, firm seedbed, early weed-free.","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Waterlogged depressions.",sim:{kind:"crop",spacing:[0.20,0.02],seedKgHa:90,yieldT:[1.2,3.2],water:{mode:"crop",mm:400},rowCrop:true}},
+ {"somali_name":"Bariis","scientific_name":"Oryza sativa","english_name":"Rice","seasonal_behavior":"Flood-irrigated paddies, Shabelle schemes.","fruit_output":"3.0–7.0 t/ha paddy under good water control.","planting_care":"Levelled bunded basins; 40 kg/ha transplanted nursery.","optimal_soil_ph":"5.5 - 7.0","what_to_avoid":"Unlevelled fields and saline floodwater.",sim:{kind:"crop",spacing:[0.25,0.20],seedKgHa:40,yieldT:[3.0,7.0],water:{mode:"crop",mm:1200}}},
+ {"somali_name":"Dukhn","scientific_name":"Pennisetum glaucum","english_name":"Pearl Millet","seasonal_behavior":"Deep drought cornerstone; 75–85 day sprint.","fruit_output":"0.6–1.8 t/ha on sandy rangelands.","planting_care":"5 kg/ha, 0.75×0.25; thrives where sorghum sulks.","optimal_soil_ph":"5.5 - 8.0","what_to_avoid":"Waterlogged heavy soils.",sim:{kind:"crop",spacing:[0.75,0.25],seedKgHa:5,yieldT:[0.6,1.8],water:{mode:"crop",mm:380}}},
+ {"somali_name":"Teff","scientific_name":"Eragrostis tef","english_name":"Teff","seasonal_behavior":"90-day fine-seeded cereal.","fruit_output":"0.8–1.4 t/ha premium health grain.","planting_care":"10 kg/ha broadcast fine; shallow cover.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Late weed flushes in fine seeded beds.",sim:{kind:"crop",spacing:[0.20,0.02],seedKgHa:10,yieldT:[0.8,1.4],water:{mode:"crop",mm:420},rowCrop:true}},
+ {"somali_name":"Hummus","scientific_name":"Cicer arietinum","english_name":"Chickpea","seasonal_behavior":"Cool dry-season pulse, drought-preferring.","fruit_output":"0.7–1.8 t/ha + N fixation.","planting_care":"40 kg/ha, 0.45×0.15; kabuli types premium.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Waterlogging during podding.",sim:{kind:"crop",spacing:[0.45,0.15],seedKgHa:40,yieldT:[0.7,1.8],water:{mode:"crop",mm:350}}},
+ {"somali_name":"Cadas","scientific_name":"Lens culinaris","english_name":"Lentil","seasonal_behavior":"Short-cool-season pulse.","fruit_output":"0.5–1.2 t/ha.","planting_care":"45 kg/ha; rhizobium starter on first crops.","optimal_soil_ph":"6.0 - 7.8","what_to_avoid":"Late sowing into rising heat.",sim:{kind:"crop",spacing:[0.30,0.10],seedKgHa:45,yieldT:[0.5,1.2],water:{mode:"crop",mm:330}}},
+ {"somali_name":"Bakaylo","scientific_name":"Vicia faba","english_name":"Faba Bean","seasonal_behavior":"Cool-season broad bean.","fruit_output":"1.0–2.5 t/ha large-seeded pulse.","planting_care":"80 kg/ha, 0.60×0.20; chocolate-spot scouting.","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Hot dry spells at flowering.",sim:{kind:"crop",spacing:[0.60,0.20],seedKgHa:80,yieldT:[1.0,2.5],water:{mode:"crop",mm:420}}},
+ {"somali_name":"Soya","scientific_name":"Glycine max","english_name":"Soybean","seasonal_behavior":"Warm-season oilseed pulse.","fruit_output":"0.8–2.2 t/ha; oil + feed meal.","planting_care":"60 kg/ha, 0.45×0.10; inoculate on virgin fields.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Saline irrigation and crusting sodic soils.",sim:{kind:"crop",spacing:[0.45,0.10],seedKgHa:60,yieldT:[0.8,2.2],water:{mode:"crop",mm:520}}},
+ {"somali_name":"Ubax Qorrax","scientific_name":"Helianthus annuus","english_name":"Sunflower","seasonal_behavior":"90–100 day oilseed.","fruit_output":"0.8–2.0 t/ha heads; high-value cooking oil.","planting_care":"35 cm grid; bird netting at grain fill.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Late planting (head rotation stress) and weedy middens.",sim:{kind:"crop",spacing:[0.60,0.30],seedKgHa:8,yieldT:[0.8,2.0],water:{mode:"crop",mm:480}}},
+ {"somali_name":"Sonkor Qasab","scientific_name":"Saccharum officinarum","english_name":"Sugarcane","seasonal_behavior":"12–16 month perennial ratoon, river schemes.","fruit_output":"60–110 t/ha cane at Juba/Shabelle intensity.","planting_care":"Furrows 1.2 m; three-bud setts; heavy K feeding.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Saline waterlogging and smut-infected setts.",sim:{kind:"crop",spacing:[1.20,0.50],seedKgHa:0,seedNote:"8–10 t/ha cane setts",yieldT:[60,110],water:{mode:"crop",mm:1800}}},
+ {"somali_name":"Suuf","scientific_name":"Gossypium hirsutum","english_name":"Cotton","seasonal_behavior":"Irrigated seasonal fiber crop (Dumaal).","fruit_output":"0.8–2.0 t/ha lint cotton.","planting_care":"15 kg/ha, 0.80×0.30; jassid & bollworm calendar.","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Late rains after boll opening (staining loss).",sim:{kind:"crop",spacing:[0.80,0.30],seedKgHa:15,yieldT:[0.8,2.0],water:{mode:"crop",mm:700}}},
+ {"somali_name":"Shaan","scientific_name":"Avena sativa","english_name":"Oats","seasonal_behavior":"Cool dry-season cereal; 95-day sprint.","fruit_output":"1.5–3.0 t/ha grain + premium hay legacy.","planting_care":"100 kg/ha drilled 0.20 m rows; weed-free by tillering.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Acidic crusting beds; grazing off tillering blocks.",sim:{kind:"crop",spacing:[0.20,0.02],seedKgHa:100,yieldT:[1.5,3.0],water:{mode:"crop",mm:400},rowCrop:true}},
+ {"somali_name":"Rai","scientific_name":"Secale cereale","english_name":"Rye","seasonal_behavior":"Hardy winter cereal; tolerates acidic marginal ground.","fruit_output":"1.2–3.0 t/ha grain.","planting_care":"90 kg/ha, firm shallow seedbed, early drill.","optimal_soil_ph":"5.5 - 7.0","what_to_avoid":"Waterlogged flats and late-season rust pressure.",sim:{kind:"crop",spacing:[0.20,0.02],seedKgHa:90,yieldT:[1.2,3.0],water:{mode:"crop",mm:420},rowCrop:true}},
+ {"somali_name":"Kinwa","scientific_name":"Chenopodium quinoa","english_name":"Quinoa","seasonal_behavior":"Salt-tolerant pseudo-cereal; 100-day window.","fruit_output":"0.8–2.4 t/ha of high-protein grain.","planting_care":"8 kg/ha fine broadcast; light rake-in cover.","optimal_soil_ph":"6.0 - 8.5","what_to_avoid":"Overhead water on mature seed heads — field sprouting.",sim:{kind:"crop",spacing:[0.45,0.20],seedKgHa:8,yieldT:[0.8,2.4],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Amaranti","scientific_name":"Amaranthus cruentus","english_name":"Grain Amaranth","seasonal_behavior":"Fast drought-pulsing pseudo-cereal.","fruit_output":"1.0–2.0 t/ha grain + edible leaf.","planting_care":"3 kg/ha, 0.50×0.20; thin to single plants.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Late weed flushes and leaf-webber swarms.",sim:{kind:"crop",spacing:[0.50,0.20],seedKgHa:3,yieldT:[1.0,2.0],water:{mode:"crop",mm:450}}},
+ {"somali_name":"Bukwiit","scientific_name":"Fagopyrum esculentum","english_name":"Buckwheat","seasonal_behavior":"70-day sprint between main seasons.","fruit_output":"0.6–1.5 t/ha triangular grain + honey crop.","planting_care":"50 kg/ha broadcast; honeybee access doubles yields.","optimal_soil_ph":"5.0 - 7.0","what_to_avoid":"Severe heat waves at bloom (flower blast).",sim:{kind:"crop",spacing:[0.35,0.05],seedKgHa:50,yieldT:[0.6,1.5],water:{mode:"crop",mm:380}}},
+ {"somali_name":"Saflower","scientific_name":"Carthamus tinctorius","english_name":"Safflower","seasonal_behavior":"Deep-taproot drought oilseed.","fruit_output":"0.7–1.8 t/ha oilseed.","planting_care":"30 kg/ha, 0.45 m rows; minimal fertility.","optimal_soil_ph":"6.5 - 8.0","what_to_avoid":"Humid ripening windows — Alternaria seed rot.",sim:{kind:"crop",spacing:[0.45,0.15],seedKgHa:30,yieldT:[0.7,1.8],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Kataan","scientific_name":"Linum usitatissimum","english_name":"Flax / Linseed","seasonal_behavior":"Cool-sown dual-fiber/oil crop.","fruit_output":"0.8–1.7 t/ha omega-3 oilseed.","planting_care":"40 kg/ha fine drills; harvest at full subsidence.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Late nitrogen bursts — catastrophic lodging.",sim:{kind:"crop",spacing:[0.20,0.02],seedKgHa:40,yieldT:[0.8,1.7],water:{mode:"crop",mm:420},rowCrop:true}},
+ {"somali_name":"Canola","scientific_name":"Brassica napus","english_name":"Canola / Rapeseed","seasonal_behavior":"Cool-window oilseed brassica.","fruit_output":"0.5–1.5 t/ha high-erucic-grade oil.","planting_care":"6 kg/ha drills; split-N at stem extension.","optimal_soil_ph":"5.5 - 8.0","what_to_avoid":"Sulfur-poor plots — low oil + pod shatter.",sim:{kind:"crop",spacing:[0.35,0.08],seedKgHa:6,yieldT:[0.5,1.5],water:{mode:"crop",mm:480}}},
+ {"somali_name":"Pijin","scientific_name":"Cajanus cajan","english_name":"Pigeonpea","seasonal_behavior":"Deep-rooted perennial-ish pulse; 6-month cycle.","fruit_output":"0.6–1.5 t/ha grain + forage + stick fuel.","planting_care":"15 kg/ha, 1.00×0.30; thrives on dry crests.","optimal_soil_ph":"5.0 - 7.5","what_to_avoid":"Waterlogged flats — taproot rot sweeps blocks.",sim:{kind:"crop",spacing:[1.00,0.30],seedKgHa:15,yieldT:[0.6,1.5],water:{mode:"crop",mm:450}}},
+ {"somali_name":"Mung","scientific_name":"Vigna radiata","english_name":"Mung Bean","seasonal_behavior":"60-day sprinter between cereal windows.","fruit_output":"0.5–1.2 t/ha premium pulse.","planting_care":"20 kg/ha, 0.45×0.15; single-cultivation weeding.","optimal_soil_ph":"6.2 - 7.5","what_to_avoid":"Delayed harvest — pods shatter in dry-sun finish.",sim:{kind:"crop",spacing:[0.45,0.15],seedKgHa:20,yieldT:[0.5,1.2],water:{mode:"crop",mm:350}}},
+ {"somali_name":"Bambara","scientific_name":"Vigna subterranea","english_name":"Bambara Groundnut","seasonal_behavior":"Underground legume; ultimate drought-security crop.","fruit_output":"0.4–1.0 t/ha complete-protein pods.","planting_care":"35 kg/ha, 0.45×0.30; zero-input friendly.","optimal_soil_ph":"5.0 - 6.5","what_to_avoid":"Excess lime soils — chronically poor pod fill.",sim:{kind:"crop",spacing:[0.45,0.30],seedKgHa:35,yieldT:[0.4,1.0],water:{mode:"crop",mm:380}}},
+ {"somali_name":"Digir Cas","scientific_name":"Phaseolus vulgaris","english_name":"Kidney Bean","seasonal_behavior":"Warm-season staple pulse, 90-day.","fruit_output":"0.8–2.0 t/ha grain.","planting_care":"60 kg/ha, 0.45×0.10; harvest on full dry-down.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Saline irrigation — marginal leaf burn wipes rows.",sim:{kind:"crop",spacing:[0.45,0.10],seedKgHa:60,yieldT:[0.8,2.0],water:{mode:"crop",mm:450}}}];
+const VEG_JSON = [
+ {"somali_name":"Yaanyo","scientific_name":"Solanum lycopersicum","english_name":"Tomato","seasonal_behavior":"90-day seasonal crop.","fruit_output":"25–60 t/ha staked.","planting_care":"Staking + suckering + deep drip lines.","optimal_soil_ph":"6.0 - 6.8","what_to_avoid":"Overhead watering (blight) and planting after potatoes.",sim:{kind:"crop",spacing:[0.60,0.45],seedKgHa:0.2,seedNote:"~200 g/ha (nursery-transplant)",yieldT:[25,60],water:{mode:"crop",mm:550}}},
+ {"somali_name":"Basal","scientific_name":"Allium cepa","english_name":"Onion","seasonal_behavior":"Dry-season crop + field curing.","fruit_output":"15–30 t/ha bulbs.","planting_care":"Shallow frequent watering; ruthless weed control.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Planting too deep and applying late nitrogen.",sim:{kind:"crop",spacing:[0.30,0.10],seedKgHa:4,yieldT:[15,30],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Basbaas","scientific_name":"Capsicum annuum","english_name":"Chilli pepper","seasonal_behavior":"Warm season continuous.","fruit_output":"8–15 t/ha fresh.","planting_care":"Calcium feeding vs blossom end rot; transplant 4-weeks.","optimal_soil_ph":"6.0 - 6.5","what_to_avoid":"Cold drafts and completely dried-out soil.",sim:{kind:"crop",spacing:[0.50,0.40],seedKgHa:0.4,seedNote:"~400 g/ha (nursery)",yieldT:[8,15],water:{mode:"crop",mm:550}}},
+ {"somali_name":"Kabsar","scientific_name":"Coriandrum sativum","english_name":"Coriander","seasonal_behavior":"Fast 45-day continuous cuts.","fruit_output":"4–8 t/ha leaf.","planting_care":"Partial shade hot months; succession sow every 3 weeks.","optimal_soil_ph":"6.2 - 6.8","what_to_avoid":"Transplanting — direct-seed only or it bolts.",sim:{kind:"crop",spacing:[0.25,0.10],seedKgHa:12,yieldT:[4,8],water:{mode:"crop",mm:350}}},
+ {"somali_name":"Qajaar","scientific_name":"Cucumis sativus","english_name":"Cucumber","seasonal_behavior":"60-day summer crop.","fruit_output":"20–40 t/ha trellised.","planting_care":"Trellis support; high organic compost base.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Lack of pollinating bees and dry spells at fruit set.",sim:{kind:"crop",spacing:[1.00,0.50],seedKgHa:2,yieldT:[20,40],water:{mode:"crop",mm:480}}},
+ {"somali_name":"Barbaroni","scientific_name":"Solanum melongena","english_name":"Eggplant","seasonal_behavior":"Long warm season.","fruit_output":"20–35 t/ha.","planting_care":"Heavy feeding; shade net at 38°C+ peaks.","optimal_soil_ph":"5.5 - 6.8","what_to_avoid":"Water stress during fruit set (bitter pithy fruit).",sim:{kind:"crop",spacing:[0.75,0.60],seedKgHa:0.5,seedNote:"~500 g/ha (nursery)",yieldT:[20,35],water:{mode:"crop",mm:600}}},
+ {"somali_name":"Baamiye","scientific_name":"Abelmoschus esculentus","english_name":"Okra","seasonal_behavior":"High-heat seasonal.","fruit_output":"8–12 t/ha continuous pick.","planting_care":"Soak seed 12 h; 2-day harvest rhythm.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Cold soils and taproot damage while weeding.",sim:{kind:"crop",spacing:[0.60,0.30],seedKgHa:8,yieldT:[8,12],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Baradho","scientific_name":"Solanum tuberosum","english_name":"Potato","seasonal_behavior":"Cool windows on irrigated beds.","fruit_output":"12–25 t/ha tubers.","planting_care":"Hill ridges 0.75 m; certified seed tubers only.","optimal_soil_ph":"5.0 - 6.5","what_to_avoid":"Scab in alkaline beds; late-blight overhead water.",sim:{kind:"crop",spacing:[0.75,0.30],seedKgHa:0,seedNote:"2.0–2.5 t/ha seed tubers",yieldT:[12,25],water:{mode:"crop",mm:550}}},
+ {"somali_name":"Bataata","scientific_name":"Ipomoea batatas","english_name":"Sweet Potato","seasonal_behavior":"90–120 day trailing warm crop.","fruit_output":"12–22 t/ha storage roots.","planting_care":"Vine cuttings on ridges; potassium-forward feeding.","optimal_soil_ph":"5.5 - 6.5","what_to_avoid":"Excess nitrogen (all vine, no roots) and weevil carryover.",sim:{kind:"crop",spacing:[0.90,0.30],seedKgHa:0,seedNote:"~37k vine cuttings/ha",yieldT:[12,22],water:{mode:"crop",mm:500}}},
+ {"somali_name":"Muhoogo","scientific_name":"Manihot esculenta","english_name":"Cassava","seasonal_behavior":"8–12 month drought-shock hardy staple.","fruit_output":"15–30 t/ha fresh roots.","planting_care":"20 cm stem cuttings, 1.0×0.8 m; leave 10 mo minimum.","optimal_soil_ph":"5.5 - 7.5","what_to_avoid":"Whitefly mosaic pressure and waterlogged rows.",sim:{kind:"crop",spacing:[1.00,0.80],seedKgHa:0,seedNote:"~12.5k stem cuttings/ha",yieldT:[15,30],water:{mode:"crop",mm:600}}},
+ {"somali_name":"Karoto","scientific_name":"Daucus carota","english_name":"Carrot","seasonal_behavior":"Dry cool slots on sandy beds.","fruit_output":"20–35 t/ha roots.","planting_care":"Stone-free fine tilth; light, frequent top watering till emergence.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Fresh manure (forking) and crusting heavy clays.",sim:{kind:"crop",spacing:[0.30,0.05],seedKgHa:3,yieldT:[20,35],water:{mode:"crop",mm:450}}},
+ {"somali_name":"Toon","scientific_name":"Allium sativum","english_name":"Garlic","seasonal_behavior":"Short-day bulb form; dry down curing.","fruit_output":"6–10 t/ha bulbs.","planting_care":"Cloves 0.30×0.10 upright, shallow.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Late nitrogen (soft necks) and wet curing sheds.",sim:{kind:"crop",spacing:[0.30,0.10],seedKgHa:0,seedNote:"~1.2 t/ha seed cloves",yieldT:[6,10],water:{mode:"crop",mm:380}}},
+ {"somali_name":"Sinjiibil","scientific_name":"Zingiber officinale","english_name":"Ginger","seasonal_behavior":"8–10 month shade-tolerant rhizome.","fruit_output":"10–20 t/ha fresh rhizome.","planting_care":"30% shade nets; plant 4 cm seed pieces into hot compost rows.","optimal_soil_ph":"6.0 - 6.5","what_to_avoid":"Standing water — rhizome soft rot sweeps beds.",sim:{kind:"crop",spacing:[0.45,0.25],seedKgHa:0,seedNote:"~1.8 t/ha rhizome seed",yieldT:[10,20],water:{mode:"crop",mm:900}}},
+ {"somali_name":"Huruud","scientific_name":"Curcuma longa","english_name":"Turmeric","seasonal_behavior":"7–9 month rhizome, turmeric-yellow commerce.","fruit_output":"8–15 t/ha fresh turmeric.","planting_care":"Wide ridges, heavy organic mulch, steady moisture.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Dry windy exposure and rhizome rot from wet spots.",sim:{kind:"crop",spacing:[0.45,0.30],seedKgHa:0,seedNote:"~2.0 t/ha rhizome seed",yieldT:[8,15],water:{mode:"crop",mm:850}}},
+ {"somali_name":"Kabow","scientific_name":"Brassica oleracea var. capitata","english_name":"Cabbage","seasonal_behavior":"Cool-window heading brassica.","fruit_output":"25–45 t/ha heads.","planting_care":"Hardened 4-week transplants; diamondback control.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Clubroot in acidic weedy beds; irregular watering (split heads).",sim:{kind:"crop",spacing:[0.50,0.40],seedKgHa:0.3,seedNote:"~300 g/ha (nursery)",yieldT:[25,45],water:{mode:"crop",mm:450}}},
+ {"somali_name":"Salaad","scientific_name":"Lactuca sativa","english_name":"Lettuce","seasonal_behavior":"Fast 30–40 day leafy cash rounds.","fruit_output":"10–20 t/ha leaves or head lettuce.","planting_care":"Shade cloth at midday; succession blocks weekly.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Bolting under heat spikes and tipburn calcium shortage.",sim:{kind:"crop",spacing:[0.30,0.25],seedKgHa:0.4,seedNote:"~400 g/ha",yieldT:[10,20],water:{mode:"crop",mm:300}}},
+ {"somali_name":"Isbinaj","scientific_name":"Spinacia oleracea","english_name":"Spinach","seasonal_behavior":"Cool fast leafy cycle.","fruit_output":"8–15 t/ha leaf.","planting_care":"Direct drills, 0.25 m rows, succession sowings.","optimal_soil_ph":"6.5 - 7.5","what_to_avoid":"Acidic beds and heat-induced bolting.",sim:{kind:"crop",spacing:[0.25,0.05],seedKgHa:15,yieldT:[8,15],water:{mode:"crop",mm:320}}},
+ {"somali_name":"Baazi","scientific_name":"Pisum sativum","english_name":"Garden Peas","seasonal_behavior":"Cool snap-climbing or bush types.","fruit_output":"4–8 t/ha fresh pods.","planting_care":"Inoculated drills; mesh trellis for climbers.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Hot winds at bloom and powdery mildew crowding.",sim:{kind:"crop",spacing:[0.30,0.10],seedKgHa:60,yieldT:[4,8],water:{mode:"crop",mm:380}}},
+ {"somali_name":"Brokoli","scientific_name":"Brassica oleracea var. italica","english_name":"Broccoli","seasonal_behavior":"Cool-florets brassica.","fruit_output":"10–18 t/ha florets.","planting_care":"Steady calcium + B; transplant stocky hard plants.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Heat waves at head formation (riceyness).",sim:{kind:"crop",spacing:[0.60,0.45],seedKgHa:0.3,seedNote:"~300 g/ha (nursery)",yieldT:[10,18],water:{mode:"crop",mm:500}}},
+ {"somali_name":"Qarnabit","scientific_name":"Brassica oleracea var. botrytis","english_name":"Cauliflower","seasonal_behavior":"Cool curd-former.","fruit_output":"12–20 t/ha curds.","planting_care":"Blanch curds with leaf ties where sun fierce.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Interrupted watering — buttoning disaster.",sim:{kind:"crop",spacing:[0.60,0.45],seedKgHa:0.3,seedNote:"~300 g/ha (nursery)",yieldT:[12,20],water:{mode:"crop",mm:520}}},
+ {"somali_name":"Banjer","scientific_name":"Beta vulgaris","english_name":"Beetroot","seasonal_behavior":"60-day root, tolerant warmth.","fruit_output":"20–30 t/ha roots.","planting_care":"Thin to 10 cm singles; boron against black heart.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Overcrowding (rat-tail roots) and acidic scald.",sim:{kind:"crop",spacing:[0.45,0.10],seedKgHa:6,yieldT:[20,30],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Qaar","scientific_name":"Cucurbita maxima / moschata","english_name":"Pumpkin / Squash","seasonal_behavior":"Warm trailing 100-day vines.","fruit_output":"15–30 t/ha fruit.","planting_care":"1.5 m hills; ring mulch under fruits.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Waterlogged seats and fruit-fly neglect.",sim:{kind:"crop",spacing:[1.50,0.80],seedKgHa:3,yieldT:[15,30],water:{mode:"crop",mm:520}}},
+ {"somali_name":"Radish","scientific_name":"Raphanus sativus","english_name":"Radish","seasonal_behavior":"30–40 day crunchy sprint between main beds.","fruit_output":"15–25 t/ha roots.","planting_care":"Direct drill 0.30×0.07; constant light moisture.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Dry spikes at sizing and boron-starved splitting.",sim:{kind:"crop",spacing:[0.30,0.07],seedKgHa:8,yieldT:[15,25],water:{mode:"crop",mm:350}}},
+ {"somali_name":"Selderi","scientific_name":"Apium graveolens","english_name":"Celery","seasonal_behavior":"Long 120-day heavy-feeder beds.","fruit_output":"40–60 t/ha crisped stalks blanched.","planting_care":"Transplant 10-week nursery; self-blanch rows work best.","optimal_soil_ph":"6.2 - 7.0","what_to_avoid":"Any water stress — blackheart and pithy fibers.",sim:{kind:"crop",spacing:[0.40,0.30],seedKgHa:0.3,seedNote:"~300 g/ha (nursery)",yieldT:[40,60],water:{mode:"crop",mm:500}}},
+ {"somali_name":"Liik","scientific_name":"Allium porrum","english_name":"Leek","seasonal_behavior":"Long cool season; hill-up blanching.","fruit_output":"15–25 t/ha shanks.","planting_care":"Plant into dibbled holes; ridge up twice.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Burying past leaf forks — crown rot sets in.",sim:{kind:"crop",spacing:[0.40,0.15],seedKgHa:6,yieldT:[15,25],water:{mode:"crop",mm:550}}},
+ {"somali_name":"Digir Cagaar","scientific_name":"Phaseolus vulgaris (ortiva)","english_name":"Green Bean","seasonal_behavior":"Warm 60-day bush crop, succession-friendly.","fruit_output":"8–12 t/ha fresh pods.","planting_care":"70 kg/ha, 0.50×0.08; pick every 3 days.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Working wet foliage — rust spreads row to row.",sim:{kind:"crop",spacing:[0.50,0.08],seedKgHa:70,yieldT:[8,12],water:{mode:"crop",mm:400}}},
+ {"somali_name":"Keel","scientific_name":"Brassica oleracea (acephala)","english_name":"Kale / Collards","seasonal_behavior":"Continuous-cut leaf brassica.","fruit_output":"15–25 t/ha leaf over months of cuttings.","planting_care":"0.45×0.45 sturdy transplants; cut-and-come-again.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Diamondback moth neglect through hot runs.",sim:{kind:"crop",spacing:[0.45,0.45],seedKgHa:8,yieldT:[15,25],water:{mode:"crop",mm:500}}},
+ {"somali_name":"Sukiini","scientific_name":"Cucurbita pepo","english_name":"Zucchini / Courgette","seasonal_behavior":"Explosive 45–60 day squash rounds.","fruit_output":"15–30 t/ha fruits harvested young.","planting_care":"1.0×0.8 hills; harvest tennis-ball to bat size.","optimal_soil_ph":"5.8 - 6.8","what_to_avoid":"Letting fruits oversize — yield stalls; late mildew cover.",sim:{kind:"crop",spacing:[1.00,0.80],seedKgHa:3,yieldT:[15,30],water:{mode:"crop",mm:550}}},
+ {"somali_name":"Ternib","scientific_name":"Brassica rapa subsp. rapa","english_name":"Turnip","seasonal_behavior":"40–60 day dual root+leaf.","fruit_output":"20–35 t/ha roots + greens.","planting_care":"Light drills, thin early to 15 cm singles.","optimal_soil_ph":"6.0 - 7.5","what_to_avoid":"Summer bolting and age-woody oversized roots.",sim:{kind:"crop",spacing:[0.40,0.15],seedKgHa:4,yieldT:[20,35],water:{mode:"crop",mm:380}}},
+ {"somali_name":"Galley Sonkor","scientific_name":"Zea mays saccharata","english_name":"Sweet Corn","seasonal_behavior":"Block-planted warm rounds, 75–90 day.","fruit_output":"8–15 t/ha fresh cobs.","planting_care":"Blocks of ≥4 rows for wind pollination; 0.75×0.25.","optimal_soil_ph":"6.0 - 7.0","what_to_avoid":"Isolated single rows — poor wind pollination fills empty cobs.",sim:{kind:"crop",spacing:[0.75,0.25],seedKgHa:18,yieldT:[8,15],water:{mode:"crop",mm:550}}}];
+
+/* ═══════ SPEC-2 · SOIL DIAGNOSTIC SUBSTRATE — ALL 18 SOMALI REGIONS ═══════ */
+const SOILS={
+ awdal:{name:"Awdal",geo:"Borama piedmont + Guban coastal belt",wrb:"Calcaric Calcisols / Yermic Arenosols",ph:7.8,ec:1.2,om:0.8,texture:"gravelly loam → coastal sand",note:"Sorghum foothills + oasis date groves; wind-erosion program on fallow margins."},
+ bari:{name:"Bari",geo:"Boosaaso → Cape Guardafui",wrb:"Gypsic Calcisols / Hypersalic Solonchaks",ph:8.0,ec:1.5,om:0.5,texture:"gravel + salt-influenced sand",note:"Extreme-arid karst coast; Dhuur windbreaks + frankincense belt; only Timir oases carry fruit culture."},
+ sanaag:{name:"Sanaag",geo:"Golis escarpment frankincense belt",wrb:"Calcaric Calcisols over limestone",ph:7.9,ec:0.8,om:0.8,texture:"stony, shallow mountain calcisol",note:"Calcareous Peak Country — Boswellia/Commiphora niche; rock-mulch pockets only; vegetables: don't."},
+ sool:{name:"Sool",geo:"Caynaba → Laascaanood plains",wrb:"Haplic Gypsisols / red-brown Aridisols",ph:7.5,ec:0.6,om:0.6,texture:"red sand over gypsum pan",note:"Acacia parkland rangeland soils; watch wind-entrenchment on denuded margins."},
+ togdheer:{name:"Togdheer",geo:"Burco → Oodweyne plain",wrb:"Vertic Cambisols (cracking clays)",ph:7.7,ec:0.9,om:0.9,texture:"cracking clay loam patches",note:"The dryland granary; runoff farming on neep spots; seal-crust management is decisive."},
+ wgalbeed:{name:"Woqooyi Galbeed",geo:"Hargeysa plateau",wrb:"Chromic Cambisols / Calcisols",ph:7.9,ec:1.0,om:0.7,texture:"sandy clay loam shelf",note:"Terraced sorghum heritage; potassium typically abundant — organic matter is the constraint."},
+ mudug:{name:"Mudug",geo:"Central plain — Gaalkacyo belt",wrb:"Haplic Aridisols (deep red sands)",ph:6.8,ec:0.4,om:0.6,texture:"deep red aeolian sand",note:"Classic Mudug aridisols; Cadaad/Gud/Qurac traction; near-zero water-holding — compost bands + mulch rings."},
+ nugaal:{name:"Nugaal",geo:"Garowe → Eyl corridor",wrb:"Clayey Arenosols / Calcisols",ph:7.8,ec:0.9,om:0.5,texture:"clayey red sand",note:"Madheedh/Mareer pasture parkland; impound floodwater for fodder block establishment."},
+ galguduud:{name:"Galguduud",geo:"Dhuusamareeb → Ceel Dheer",wrb:"Aeolian Arenosols",ph:7.2,ec:0.5,om:0.7,texture:"deep fine aeolian sand",note:"Best interior fit for Dukhn millet + cape gooseberry; fertility rides on manure pulses."},
+ hiiraan:{name:"Hiiraan",geo:"Belet Weyne river corridor",wrb:"Fluvisols + Vertisols (buulaha)",ph:7.6,ec:1.1,om:1.0,texture:"riverine silt + black cracking clay",note:"Jowhar-range scheme analog; black 'buulaha' patches bank pre-planting soil water."},
+ shabelle:{name:"Shabeellaha Hoose",geo:"Lower Shabelle — Afgooye · Koidha · Baled-Amin",wrb:"Calcaric Fluvisols / Vertisols",ph:8.1,ec:2.0,om:1.2,texture:"deep riverine silt loam",note:"The fertile Southern workhorse — rich fluvisol/vertisol complex; watch sodic crusts after flood irrigation: gypsum + OM program."},
+ mshabelle:{name:"Shabeellaha Dhexe",geo:"Jowhar · Mahadaay schemes",wrb:"Fluvisols (canal-fed, levelled)",ph:7.9,ec:1.6,om:1.1,texture:"levelled alluvial silt",note:"Historic scheme fluvisols; drainage rehabilitation is the single biggest decadal yield lever."},
+ banaadir:{name:"Banaadir",geo:"Muqdisho peri-urban fringe",wrb:"Calcaric Arenosols (coastal)",ph:8.0,ec:1.8,om:0.8,texture:"calcareous coastal sand",note:"Kitchen-veg frontier; saline bore-water caps tomatoes — favors Caday & pineapple-adjacent band."},
+ bakool:{name:"Bakool",geo:"Xudur · Waajid plateau",wrb:"Lithic / Calcaric Calcisols",ph:7.6,ec:0.7,om:0.8,texture:"stony red-brown loam",note:"Rock-mulch measurably improves the cowpea water budget; wind-scour risk in dry spells."},
+ bay:{name:"Bay",geo:"Baydhaba → Buurhakaba",wrb:"Chromic Luvisols / Vertisol pockets",ph:7.8,ec:0.9,om:1.0,texture:"red sandy clay loam",note:"The national breadbasket; tied ridges + manure out-perform any single variety upgrade."},
+ gedo:{name:"Gedo",geo:"Garbahaaray · Luuq belt",wrb:"Haplic Arenosols / Luvisol pockets",ph:7.4,ec:0.7,om:0.7,texture:"red sand / loam pockets",note:"Dolow–Gedo sesbania fodder; sorghum on floodplains following Juba spill years."},
+ ljuba:{name:"Jubbada Hoose",geo:"Kismaayo → Jamaame",wrb:"Calcaric Fluvisols / Vertic Cambisols",ph:8.2,ec:2.1,om:1.3,texture:"deep alluvial silt",note:"Rich river-zone fluvisols — the historic export-banana belt; sodium rise creeping — monitor EC annually."},
+ mjuba:{name:"Jubbada Dhexe",geo:"Jilib → Bu'aale",wrb:"Calcaric Fluvisols",ph:8.0,ec:1.7,om:1.1,texture:"alluvial silt loam",note:"Sesame/banana country; canal sediment management defines decadal yield trajectories."},
+ lab:{name:"Client field sample (lab override)",geo:"direct laboratory analysis — overrides regional baseline",wrb:"measured sample",ph:7.0,ec:0.5,om:1.0,texture:"as measured",note:"Direct pH/EC/OM/N/P/K from your field kit or partner laboratory.",hidden:true},
+};
+const REGION_ORDER=["awdal","bari","sanaag","sool","togdheer","wgalbeed","mudug","nugaal","galguduud","hiiraan","shabelle","mshabelle","banaadir","bakool","bay","gedo","ljuba","mjuba","lab"];
+
+/* per-species simulation calibration — safe defaults cover everything else */
+const SIM_META={
+ "Ziziphus mauritiana":{spacing:[8,8],kgYr:[15,40],water:{mode:"tree",lTreeWeek:40}},
+ "Dobera glabra":{spacing:[10,10],kgYr:[30,60],water:{mode:"tree",lTreeWeek:30}},
+ "Acacia bussei":{spacing:[10,10],kgYr:[20,45],water:{mode:"tree",lTreeWeek:30}},
+ "Acacia tortilis":{spacing:[10,10],kgYr:[10,30],water:{mode:"tree",lTreeWeek:25}},
+ "Acacia senegal":{spacing:[5,5],kgYr:[0.5,1.5],water:{mode:"tree",lTreeWeek:20}},
+ "Conocarpus lancifolius":{spacing:[4,4],yieldNote:"2–4 m³ wood/ha/yr",water:{mode:"tree",lTreeWeek:60}},
+ "Juniperus excelsa":{spacing:[5,5],yieldNote:"heritage timber stock (Daalo highlands only)",water:{mode:"tree",lTreeWeek:25}},
+ "Boswellia frereana":{spacing:[8,8],kgYr:[0.5,1.0],water:{mode:"tree",lTreeWeek:15}},
+ "Commiphora myrrha":{spacing:[4,4],kgYr:[0.2,0.8],water:{mode:"tree",lTreeWeek:15}},
+ "Cordia sinensis":{spacing:[6,6],kgYr:[5,15],water:{mode:"tree",lTreeWeek:30}},
+ "Cordeauxia edulis":{spacing:[4,4],kgYr:[2,5],water:{mode:"tree",lTreeWeek:20}},
+ "Salvadora persica":{spacing:[6,6],kgYr:[5,10],water:{mode:"tree",lTreeWeek:35}},
+ "Hyphaene compressa":{spacing:[8,8],kgYr:[10,25],water:{mode:"tree",lTreeWeek:50}},
+ "Tamarindus indica":{spacing:[8,8],kgYr:[20,60],water:{mode:"tree",lTreeWeek:35}},
+ "Adansonia digitata":{spacing:[12,12],kgYr:[50,200],water:{mode:"tree",lTreeWeek:40}},
+ "Balanites aegyptiaca":{spacing:[8,8],kgYr:[15,40],water:{mode:"tree",lTreeWeek:30}},
+ "Mangifera indica":{spacing:[10,10],kgYr:[80,180],water:{mode:"orchard",mm:750}},
+ "Carica papaya":{spacing:[2.5,2.5],kgYr:[19,38],water:{mode:"orchard",mm:900}},
+ "Citrus sinensis":{spacing:[6,6],kgYr:[60,110],water:{mode:"orchard",mm:1000}},
+ "Citrus aurantifolia":{spacing:[5,5],kgYr:[30,45],water:{mode:"orchard",mm:900}},
+ "Citrus paradisi":{spacing:[6,6],kgYr:[80,140],water:{mode:"orchard",mm:950}},
+ "Psidium guajava":{spacing:[6,6],kgYr:[25,70],water:{mode:"orchard",mm:700}},
+ "Phoenix dactylifera":{spacing:[8,8],kgYr:[40,80],water:{mode:"orchard",mm:1300}},
+ "Cocos nucifera":{spacing:[8,8],kgYr:[60,100],water:{mode:"orchard",mm:1350}},
+ "Musa acuminata":{spacing:[2.5,2.5],kgYr:[12,25],water:{mode:"orchard",mm:1500}},
+ "Annona muricata":{spacing:[8,8],kgYr:[40,120],water:{mode:"orchard",mm:1000}},
+ "Annona squamosa":{spacing:[4,4],kgYr:[15,40],water:{mode:"orchard",mm:800}},
+ "Anacardium occidentale":{spacing:[8,8],kgYr:[10,25],water:{mode:"tree",lTreeWeek:30}},
+ "Artocarpus heterophyllus":{spacing:[8,8],kgYr:[50,150],water:{mode:"orchard",mm:1100}},
+ "Selenicereus undatus":{spacing:[3,1.5],kgYr:[5,12],water:{mode:"orchard",mm:600}},
+ "Opuntia ficus-indica":{spacing:[4,3],kgYr:[8,15],water:{mode:"tree",lTreeWeek:10}},
+ "Punica granatum":{spacing:[5,5],kgYr:[8,15],water:{mode:"tree",lTreeWeek:25}},
+ "Ficus carica":{spacing:[6,6],kgYr:[20,40],water:{mode:"tree",lTreeWeek:30}},
+ "Vitis vinifera":{spacing:[2.5,2],kgYr:[8,15],water:{mode:"orchard",mm:600}},
+ "Olea europaea":{spacing:[6,6],kgYr:[10,30],water:{mode:"tree",lTreeWeek:25}},
+ "Morus nigra":{spacing:[6,6],kgYr:[30,60],water:{mode:"tree",lTreeWeek:30}},
+ "Ficus sycomorus":{spacing:[10,10],kgYr:[80,200],water:{mode:"tree",lTreeWeek:60}},
+ "Tamarix aphylla":{spacing:[3,3],yieldNote:"windbreak rows — protective, not harvested",water:{mode:"tree",lTreeWeek:35}},
+ "Citrullus lanatus":{spacing:[1.5,0.6],kind:"crop",seedKgHa:3,yieldT:[20,35],water:{mode:"crop",mm:450}},
+ "Cucumis melo":{spacing:[1.5,0.6],kind:"crop",seedKgHa:2.5,yieldT:[15,25],water:{mode:"crop",mm:430}},
+ "Cucumis melo var. cantalupensis":{spacing:[1.5,0.6],kind:"crop",seedKgHa:2.5,yieldT:[15,30],water:{mode:"crop",mm:430}},
+ "Persea americana":{spacing:[8,8],kgYr:[60,140],water:{mode:"orchard",mm:1000}},
+ "Pistacia vera":{spacing:[6,6],kgYr:[5,15],water:{mode:"tree",lTreeWeek:25}},
+ "Prunus dulcis":{spacing:[6,6],kgYr:[8,20],water:{mode:"tree",lTreeWeek:25}},
+ "Ceratonia siliqua":{spacing:[8,8],kgYr:[30,80],water:{mode:"tree",lTreeWeek:20}},
+ "Artocarpus altilis":{spacing:[8,8],kgYr:[100,250],water:{mode:"orchard",mm:1200}},
+ "Chrysophyllum cainito":{spacing:[8,8],kgYr:[30,70],water:{mode:"orchard",mm:1000}},
+ "Acca sellowiana":{spacing:[4,4],kgYr:[10,30],water:{mode:"tree",lTreeWeek:25}},
+ "Macadamia integrifolia":{spacing:[8,8],kgYr:[15,45],water:{mode:"tree",lTreeWeek:25}},
+ "Carya illinoinensis":{spacing:[10,10],kgYr:[20,50],water:{mode:"tree",lTreeWeek:30}},
+ "Corylus avellana":{spacing:[5,5],kgYr:[3,8],water:{mode:"tree",lTreeWeek:15}},
+ "Bertholletia excelsa":{spacing:[20,20],kgYr:[10,30],water:{mode:"tree",lTreeWeek:20}},
+ "Castanea sativa":{spacing:[8,8],kgYr:[30,80],water:{mode:"tree",lTreeWeek:25}},
+ "Vitellaria paradoxa":{spacing:[10,10],kgYr:[20,45],water:{mode:"tree",lTreeWeek:20}},
+ "Ribes nigrum":{spacing:[2.5,1.5],kgYr:[4,10],water:{mode:"orchard",mm:650}},
+ "Ribes rubrum":{spacing:[2.5,1.5],kgYr:[3,8],water:{mode:"orchard",mm:650}},
+ "Ribes uva-crispa":{spacing:[2.5,1.5],kgYr:[3,8],water:{mode:"orchard",mm:650}},
+ "Sambucus nigra":{spacing:[3,3],kgYr:[8,20],water:{mode:"tree",lTreeWeek:20}},
+ "Actinidia deliciosa":{spacing:[4,3],kgYr:[20,50],water:{mode:"orchard",mm:800}},
+ "Fragaria x ananassa":{spacing:[0.4,0.3],kind:"crop",seedKgHa:0,seedNote:"~45k runner plants/ha",yieldT:[15,30],water:{mode:"crop",mm:600}},
+ "Rubus fruticosus":{spacing:[3,1.5],kgYr:[4,10],water:{mode:"orchard",mm:600}},
+ "Rubus idaeus":{spacing:[2.5,0.5],kgYr:[2,5],water:{mode:"orchard",mm:650}},
+ "Vaccinium corymbosum":{spacing:[2.5,1],kgYr:[2,5],water:{mode:"orchard",mm:600}},
+ "Vaccinium macrocarpon":{spacing:[1.5,1],kgYr:[1,3],water:{mode:"orchard",mm:1200}},
+ "Malus domestica":{spacing:[4,4],kgYr:[30,80],water:{mode:"tree",lTreeWeek:35}},
+ "Pyrus communis":{spacing:[4,4],kgYr:[25,70],water:{mode:"tree",lTreeWeek:35}},
+ "Prunus domestica":{spacing:[6,6],kgYr:[30,70],water:{mode:"tree",lTreeWeek:30}},
+ "Prunus armeniaca":{spacing:[6,6],kgYr:[20,50],water:{mode:"tree",lTreeWeek:25}},
+ "Prunus avium":{spacing:[6,6],kgYr:[20,50],water:{mode:"tree",lTreeWeek:30}},
+ "Prunus persica":{spacing:[6,6],kgYr:[25,60],water:{mode:"tree",lTreeWeek:30}},
+ "Cydonia oblonga":{spacing:[5,5],kgYr:[20,50],water:{mode:"tree",lTreeWeek:30}},
+ "Diospyros kaki":{spacing:[6,6],kgYr:[40,90],water:{mode:"tree",lTreeWeek:30}},
+ "Eriobotrya japonica":{spacing:[6,6],kgYr:[20,50],water:{mode:"tree",lTreeWeek:25}},
+ "Passiflora edulis":{spacing:[3,2],kgYr:[10,20],water:{mode:"orchard",mm:800}},
+ "Ananas comosus":{spacing:[1,0.3],kind:"crop",seedKgHa:0,seedNote:"~30k suckers/ha",yieldT:[50,80],water:{mode:"crop",mm:1000}},
+ "Durio zibethinus":{spacing:[10,10],kgYr:[100,300],water:{mode:"orchard",mm:1400}},
+ "Dimocarpus longan":{spacing:[8,8],kgYr:[60,150],water:{mode:"orchard",mm:1000}},
+ "Nephelium lappaceum":{spacing:[8,8],kgYr:[50,120],water:{mode:"orchard",mm:1100}},
+ "Litchi chinensis":{spacing:[8,8],kgYr:[60,140],water:{mode:"orchard",mm:1000}},
+ "Averrhoa carambola":{spacing:[6,6],kgYr:[60,150],water:{mode:"orchard",mm:800}},
+ "Garcinia mangostana":{spacing:[8,8],kgYr:[40,100],water:{mode:"orchard",mm:1500}},
+ "Manilkara zapota":{spacing:[8,8],kgYr:[100,250],water:{mode:"tree",lTreeWeek:25}},
+ "Solanum betaceum":{spacing:[3,2],kgYr:[10,25],water:{mode:"orchard",mm:800}},
+ "Annona cherimola":{spacing:[6,6],kgYr:[15,40],water:{mode:"orchard",mm:700}},
+ "Grewia tenax":{spacing:[4,4],kgYr:[2,6],water:{mode:"tree",lTreeWeek:15}},
+ "Grewia villosa":{spacing:[4,4],kgYr:[1,4],water:{mode:"tree",lTreeWeek:15}},
+};
+const GROUP_DEFAULTS={g8:{spacing:[2.5,1.5],water:{mode:"orchard",mm:650},kgYr:[3,8]},g9:{spacing:[8,8],water:{mode:"tree",lTreeWeek:25},kgYr:[5,20]}};
+
+/* enrichment: manual entry → runtime record */
+function phOf(s){const p=s.split("-").map(x=>parseFloat(x.trim()));return [p[0],p[1]||p[0]];}
+const GRP_ICON={g1:"🍊",g2:"🍒",g3:"🍍",g4:"🍑",g5:"🍎",g6:"🍉",g7:"🌴",g8:"🫐",g9:"🥜",native:"🌳",crop:"🌾",veg:"🥬"};
+function enrich(e, kind, group){
+ const meta=Object.assign({},GROUP_DEFAULTS[group]||{},e.sim||{},SIM_META[e.scientific_name]||{});
+ const k=meta.kind||kind;
+ return {somali:e.somali_name,en:e.english_name,sci:e.scientific_name,season:e.seasonal_behavior,
+  output:e.fruit_output,care:e.planting_care,ph:phOf(e.optimal_soil_ph),avoid:e.what_to_avoid,
+  group,kind:k,icon:GRP_ICON[group]||"🌿",
+  spacing:meta.spacing||(k==="crop"?[1.5,0.6]:[8,8]),
+  seedKgHa:meta.seedKgHa,seedNote:meta.seedNote,yieldT:meta.yieldT,
+  kgYr:meta.kgYr,yieldNote:meta.yieldNote,water:meta.water||(k==="crop"?{mode:"crop",mm:450}:{mode:"tree",lTreeWeek:30})};
+}
+const DB={
+ nativeTrees:NATIVE_TREES.map(e=>enrich(e,"tree","native")),
+ fruitGroups:FRUIT_GROUPS.map(([label,gkey,arr])=>[label,arr.map(e=>enrich(e,gkey==="g6"?"crop":"tree",gkey))]),
+ crops:CROPS_JSON.map(e=>enrich(e,"crop","crop")),
+ vegetables:VEG_JSON.map(e=>enrich(e,"crop","veg")),
+};
+
+/* ═══════ SPEC-5 · LAB OVERRIDE + NPK sufficiency + health score ═══════ */
+const N_BAND=v=>v==null?["untested","slate"]:v<10?["LOW","red"]:v<=25?["adequate","emerald"]:["HIGH","sky"];
+const P_BAND=v=>v==null?["untested","slate"]:v<5?["LOW","red"]:v<=15?["adequate","emerald"]:["HIGH","sky"];
+const K_BAND=v=>v==null?["untested","slate"]:v<80?["LOW","red"]:v<=150?["adequate","emerald"]:["HIGH","sky"];
+function healthScore(s){
+ let pts=0,max=40+20;
+ pts+=s.ph>=6.0&&s.ph<=8.5?40:s.ph>=5.5&&s.ph<=9.5?28:14;
+ const om=typeof s.om==="number"?s.om:1.0;
+ pts+=om>=2?20:om>=1?14:om>=0.6?8:4;
+ const npk=[[s.n,N_BAND,15],[s.p,P_BAND,12],[s.k,K_BAND,13]];
+ for(const [v,band,w] of npk){if(v==null)continue;max+=w;const st=band(v)[0];pts+=st==="adequate"?w:st==="HIGH"?Math.round(w*.8):Math.round(w*.35);}
+ const score=Math.round(pts/max*100);
+ return {score,grade:score>=80?"A":score>=65?"B":score>=45?"C":"D",
+  label:score>=80?"EXCELLENT":score>=65?"GOOD":score>=45?"MARGINAL":"POOR"};
+}
+function applyLab(opts){
+ const manual=!opts||opts.manual!==false;
+ const g=id=>{const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;};
+ const ph=g("lab-ph"),ec=g("lab-ec"),om=g("lab-om"),n=g("lab-n"),p=g("lab-p"),k=g("lab-k");
+ if(ph==null||ph<3||ph>11){if(manual)alert("Enter a measured pH between 3 and 11.");return;}
+ if(manual)state.labManual=true;
+ const src=manual?"manual field kit / partner lab entry":(opts&&opts.src)||"auto-generated";
+ SOILS.lab={...SOILS.lab,hidden:false,ph,ec:ec??"—",om:om??1.0,n,p,k,src};
+ state.soil="lab";
+ const r=healthScore(SOILS.lab);
+ document.getElementById("lab-verdict").innerHTML=`Lab profile live · N ${n??"—"} ppm <b class="text-${N_BAND(n)[1]}-300">${N_BAND(n)[0]}</b> · P ${p??"—"} ppm <b class="text-${P_BAND(p)[1]}-300">${P_BAND(p)[0]}</b> · K ${k??"—"} ppm <b class="text-${K_BAND(k)[1]}-300">${K_BAND(k)[0]}</b> · Health Index <b class="text-emerald-300">${r.score}/100 (${r.grade})</b>`;
+ logEv(`${manual?"Laboratory sample applied":"Auto-sample applied"} — pH ${ph}${ec?", EC "+ec+" dS/m":""}${om?", OM "+om+"%":""}${n?", N "+n+" ppm":""}${p?", P "+p+" ppm":""}${k?", K "+k+" ppm":""}`,{flora:state.flora?state.flora.en:null,rating:r,src});
+ if(activeTab==="soil")renderFlora();
+ renderSim();
+}
+
+/* ── Hybrid mode: auto-generate the lab baseline from FAO/IIASA HWSD v2.0 ── */
+let _autoBusy=false;
+function ringCentroid(ll){let a=0,o=0;for(const p of ll){a+=p.lat;o+=p.lng;}return [a/ll.length,o/ll.length];}
+async function autoLab(aoiTarget){
+ if(state.labManual){document.getElementById("lab-verdict").innerHTML="Manual laboratory sample is active — HWSD auto-fill skipped (your field data wins).";return;}
+ if(_autoBusy)return;_autoBusy=true;
+ const base=apiBase||location.origin;
+ const a=aoiTarget||state.selected;let lat=HOME[0],lon=HOME[1];
+ if(a){[lat,lon]=ringCentroid(a.poly.getLatLngs()[0]);}else{const c=map.getCenter();lat=c.lat;lon=c.lng;}
+ const box=document.getElementById("lab-verdict");
+ box.innerHTML="⏳ sampling FAO/IIASA HWSD v2.0 grid…";
+ try{
+  const r=await fetch(`${base}/api/v1/lab/hwsd/sample?lat=${lat.toFixed(6)}&lon=${lon.toFixed(6)}`);
+  const j=await r.json();
+  if(!j.available){box.innerHTML="HWSD dataset not mounted on this server — keeping the 18-region baseline (see data/hwsd/README to mount it).";return;}
+  if(!j.sample||j.sample.ph==null){box.innerHTML="Outside the soil grid at this point — keeping regional baseline. Manual entry still available.";return;}
+  const s=j.sample;
+  const setIf=(id,v)=>{const el=document.getElementById(id);if(!el.value&&v!=null&&!isNaN(v))el.value=v;};
+  setIf("lab-ph",s.ph);
+  setIf("lab-om",s.om_pct);
+  if(s.nitrogen_pct)setIf("lab-n",Math.round(s.nitrogen_pct*1000));  /* total-N % → ppm-scale estimate; EC/P/K stay for the field kit */
+  applyLab({manual:false,src:s.source});
+  box.innerHTML=`🛰 Auto-baseline from <b>${s.source}</b> · MU ${s.mu_id}${s.wrb?" · "+s.wrb:""} · layer ${s.layer}${s.clay_pct!=null?` · texture clay ${s.clay_pct}%/sand ${s.sand_pct}%/silt ${s.silt_pct}%`:""}.`;
+ }catch{box.innerHTML="HWSD endpoint unreachable — regional baseline unchanged.";}
+ finally{_autoBusy=false;}
+}
+
+/* ═══════ SPEC-5 · CLIENT CERTIFICATE ENGINE ═══════ */
+function issueCertificate(){
+ const a=state.selected,f=state.flora,s=SOILS[state.soil];
+ if(!a&&!f){alert("Draw a polygon or select a flora item first — the certificate documents a real session state.");return;}
+ const r=healthScore(s);
+ const m2=a?aoiM2(a):null,ha=m2?m2/1e4:0;
+ const plants=(a&&f)?Math.floor(m2/(f.spacing[0]*f.spacing[1])):null;
+ const qty=!f?"—":f.kind==="crop"?((f.seedKgHa||0)>0?`Seed: ${fnum(f.seedKgHa*ha,1)} kg ${f.seedNote?`(${f.seedNote})`:""}`:`Planting stock: ${f.seedNote||"nursery"}`):`Seedlings: ${fnum(plants,0)} plants`;
+ const yld=!f?"— (soil diagnostic certificate)":f.kind==="crop"?`${fnum(f.yieldT[0]*ha,1)} – ${fnum(f.yieldT[1]*ha,1)} t / season`:
+          (f.kgYr?`${fnum(f.kgYr[0]*plants/1000,2)} – ${fnum(f.kgYr[1]*plants/1000,2)} t / yr`:(f.yieldNote||"qualitative"));
+ const wat=!f?"—":f.kind==="crop"?`${fnum(ha*f.water.mm*10,0)} m³ / season (${f.water.mm} mm)`:
+          (f.water.mode==="orchard"?`${fnum(ha*f.water.mm*10,0)} m³ / yr`:`${fnum(plants*f.water.lTreeWeek*24/1000,0)} m³ establishment (24 wks)`);
+ const verdict=!f?(r.grade==="A"||r.grade==="B"?"CONFORMS — soil health index within productive range":"CONDITIONAL — fertility constraints recorded"):
+   (s.ph>=f.ph[0]&&s.ph<=f.ph[1]?"CONFORMS — soil pH inside optimal band":"AMENDMENT ADVISED — soil pH outside optimal band");
+ const seq=parseInt(localStorage.getItem("ssb_cert_seq")||"0")+1;
+ localStorage.setItem("ssb_cert_seq",String(seq));
+ const hex=[...crypto.getRandomValues(new Uint8Array(3))].map(b=>b.toString(16).padStart(2,"0")).join("").toUpperCase();
+ const track=`SSB-${new Date().getFullYear()}-${String(seq).padStart(3,"0")}-${hex}`;
+ const client=localStorage.getItem("ssb_client")||"________________";
+ const npkRow=(typeof s.n==="number"||typeof s.p==="number"||typeof s.k==="number")?`
+   <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">N · P · K analysis</td><td class="py-2">
+    Nitrate-N ${s.n??"—"} ppm <b>(${N_BAND(s.n)[0]})</b> · Phosphate-P ${s.p??"—"} ppm <b>(${P_BAND(s.p)[0]})</b> · Potassium-K ${s.k??"—"} ppm <b>(${K_BAND(s.k)[0]})</b></td></tr>`:"";
+ document.getElementById("cert-doc").innerHTML=`
+  <div class="border-b-2 border-emerald-700 pb-3 mb-4 flex items-center justify-between">
+    <div>
+      <div class="text-[22px] font-bold text-emerald-800 tracking-wide">SOMALI SPATIALBIO ENGINE</div>
+      <div class="text-[11px] tracking-widest text-slate-500 uppercase">Client Soil Health & Recommendation Certificate</div>
+    </div>
+    <svg viewBox="0 0 120 120" class="w-24 h-24 seal" aria-hidden="true">
+      <defs><path id="sealArc" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
+      <circle cx="60" cy="60" r="56" fill="none" stroke="#047857" stroke-width="2.2"/>
+      <circle cx="60" cy="60" r="50" fill="none" stroke="#047857" stroke-width=".8" stroke-dasharray="3 3"/>
+      <text font-size="9" fill="#047857" letter-spacing="2.2" font-family="Arial,sans-serif">
+        <textPath href="#sealArc">SOMALI SPATIALBIO ENGINE • FIELD VALIDATED •</textPath></text>
+      <text x="60" y="58" text-anchor="middle" font-size="26" fill="#047857">✔</text>
+      <text x="60" y="75" text-anchor="middle" font-size="8.5" fill="#047857" font-family="monospace">${track}</text>
+    </svg>
+  </div>
+  <div class="flex justify-between text-xs text-slate-500 mb-4">
+    <span>Tracking key: <b class="text-slate-800 font-mono">${track}</b></span>
+    <span>Issued: <b class="text-slate-800">${new Date().toLocaleString()}</b></span>
+  </div>
+  <table class="w-full text-sm border-collapse">
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500 w-44">Client</td><td class="py-2 font-semibold">${client}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Area of Interest</td><td class="py-2 font-semibold">${a?a.name+" — "+fmtHa(m2)+" ("+fmtAc(m2)+")":"field sample — no polygon traced"}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Recommended species</td><td class="py-2 font-semibold">${f?f.somali+" — "+f.en+` <span class="italic text-slate-500">(${f.sci})</span>`:"— (soil diagnostic only)"}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Spacing & population</td><td class="py-2">${f?f.spacing[0]+" × "+f.spacing[1]+" m — "+fnum(plants,0)+" plants / units":"—"}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Planting material</td><td class="py-2">${qty}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Projected output</td><td class="py-2">${yld}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Water demand</td><td class="py-2">${wat}</td></tr>
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Soil diagnostic</td><td class="py-2">${s.name} [${s.wrb}] — measured pH ${s.ph}, EC ${s.ec} dS/m, OM ${s.om}%${f?" · crop band "+f.ph[0]+"–"+f.ph[1]:""}${s.src?" · data source: "+s.src:""}</td></tr>
+    ${npkRow}
+    <tr class="border-b border-slate-200"><td class="py-2 text-slate-500">Soil Health Index</td><td class="py-2"><b>${r.score}/100 — Grade ${r.grade} (${r.label})</b></td></tr>
+    <tr><td class="py-2 text-slate-500">Verdict</td><td class="py-2 font-bold ${verdict.startsWith("CONFORMS")?"text-emerald-700":"text-amber-700"}">${verdict}</td></tr>
+  </table>
+  ${f?`<div class="mt-4 text-xs text-slate-600 border-l-4 border-red-300 pl-3"><b>What to avoid:</b> ${f.avoid}</div>`:""}
+  <div class="mt-8 flex justify-between text-xs text-slate-500">
+    <span>Agronomist: ____________________</span>
+    <span>GIS Officer: ____________________</span>
+    <span>Client sign: ____________________</span>
+  </div>
+  <div class="mt-6 pt-3 border-t border-slate-200 text-[10px] text-slate-400 text-center">
+    Decision-support guidance only — verify on-site with a certified agronomy partner before capital commitment.
+    Somali SpatialBio Engine · ${new Date().getFullYear()}.
+  </div>`;
+ document.getElementById("cert-modal").classList.remove("hidden");
+ logEv("Generated Digital Certificate "+track,{area:a?fmtHa(m2):null,flora:f?f.en:null,rating:r,src:"SSB certificate desk"});
+}
+
+/* ═══════ TABS / RENDER (SPEC-3 · distinct global containers) ═══════ */
+const tabsBox=document.getElementById("tabs");
+const TABS=[{id:"nativeTrees",label:"★ Native trees"},{id:"fruits",label:"🍇 Fruits — global"},{id:"crops",label:"🌾 Crops — global"},{id:"vegetables",label:"🥬 Vegetables"},{id:"soil",label:"🧪 Soil engine"}];
+let activeTab="nativeTrees";
+function renderTabs(){tabsBox.innerHTML="";TABS.forEach(t=>{const b=document.createElement("button");b.textContent=t.label;
+ b.className="px-2.5 py-1 rounded-md border border-slate-700 bg-slate-900 text-slate-400 "+(t.id===activeTab?"tab-active":"");
+ b.onclick=()=>{activeTab=t.id;renderTabs();renderFlora();};tabsBox.appendChild(b);});}
+const qs=()=>document.getElementById("flora-search").value.trim().toLowerCase();
+let _qT=null;function onSearch(){clearTimeout(_qT);_qT=setTimeout(renderFlora,140);}
+
+function floraCard(f){
+ const active=state.flora===f;
+ const el=document.createElement("div");
+ el.className="rounded-xl border bg-slate-900 p-3 cursor-pointer hover:border-emerald-600 transition-colors "+(active?"flora-active border-amber-500":"border-slate-800");
+ el.innerHTML=`
+  <div class="flex items-baseline gap-2"><span class="text-base">${f.icon}</span>
+    <b class="text-sm">${f.en}</b><span class="text-[11px] text-emerald-400">${f.somali}</span>
+    <span class="flex-1"></span><span class="text-[10px] italic text-slate-500">${f.sci}</span></div>
+  <div class="mt-1.5 grid grid-cols-[86px_1fr] gap-x-2 gap-y-1 text-[11px] leading-snug">
+    <span class="text-slate-500">Season</span><span>${f.season}</span>
+    <span class="text-slate-500">Output</span><span>${f.output}</span>
+    <span class="text-slate-500">Care</span><span>${f.care}</span>
+    <span class="text-slate-500">Optimal pH</span><span class="font-mono text-sky-300">${f.ph[0]} – ${f.ph[1]}</span>
+    <span class="text-red-400/90">⚠ Avoid</span><span class="text-red-200/80">${f.avoid}</span>
+  </div>
+  <div class="mt-2 text-right text-[10px] ${active?"text-amber-300 font-bold":"text-slate-600"}">${active?"● ACTIVE — simulated below":"tap to run simulation"}</div>`;
+ el.onclick=()=>{state.flora=f;renderFlora();renderSim();logEv("Selected flora profile: "+f.en+" ("+f.sci+")",{area:state.selected?fmtHa(aoiM2(state.selected)):null,flora:f.en,rating:healthScore(SOILS[state.soil]),src:"global flora database"});};
+ return el;
+}
+function renderFlora(){
+ const body=document.getElementById("flora-body");body.innerHTML="";
+ if(activeTab==="soil"){renderSoils(body);return;}
+ if(activeTab==="fruits"){
+  DB.fruitGroups.forEach(([label,arr])=>{
+   const items=arr.filter(f=>!qs()||JSON.stringify(f).toLowerCase().includes(qs()));
+   if(!items.length)return;
+   body.insertAdjacentHTML("beforeend",`<div class="text-[10px] uppercase tracking-widest text-amber-200/70 font-bold pt-1.5">${label}</div>`);
+   items.forEach(f=>body.appendChild(floraCard(f)));
+  });
+  if(!body.innerHTML)body.innerHTML='<div class="text-center text-slate-600 text-xs py-8">Nothing matches.</div>';
+  return;
+ }
+ const list=DB[activeTab].filter(f=>!qs()||JSON.stringify(f).toLowerCase().includes(qs()));
+ if(!list.length){body.innerHTML='<div class="text-center text-slate-600 text-xs py-8">Nothing matches.</div>';return;}
+ if(activeTab==="nativeTrees"&&!qs())
+  body.insertAdjacentHTML("beforeend",`<div class="rounded-lg border border-amber-800/50 bg-amber-950/20 p-2 text-[10px] text-amber-100/70 mb-1">★ <b>Native Somali Trees</b> — ${DB.nativeTrees.length} keystone species · Field-Manual baseline · charcoal-trade pressure flagged (Galool / Higlo / Yagcar).</div>`);
+ list.forEach(f=>body.appendChild(floraCard(f)));
+}
+
+function renderSoils(body){
+ body.insertAdjacentHTML("beforeend",`<div class="rounded-lg border border-sky-800/50 bg-slate-900 p-2 text-[10px] text-slate-400 mb-1">🧪 <b>Soil Diagnostic Matrix</b> — all <b>18 administrative regions</b> seeded with FAO-WRB substrate class, baseline organic matter index and regional surface pH.</div>`);
+ REGION_ORDER.forEach(id=>{
+  const s=SOILS[id];
+  if(s.hidden)return;
+  const active=state.soil===id;
+  const r=healthScore(s);
+  const el=document.createElement("div");
+  el.className="rounded-xl border bg-slate-900 p-3 cursor-pointer "+(active?"soil-active border-sky-500":"border-slate-800 hover:border-sky-700");
+  el.innerHTML=`<div class="flex items-baseline gap-2"><div class="font-bold text-sm text-sky-300">${s.name}</div>
+    <span class="inline-block rounded bg-slate-950 border border-slate-800 px-1.5 text-[9px] text-sky-300/80 font-mono">${s.wrb}</span></div>
+   <div class="text-[11px] text-slate-500">${s.geo} · texture: ${s.texture}</div>
+   <div class="mt-2 grid grid-cols-4 gap-2 text-center">
+     <div class="rounded bg-slate-950 p-1.5"><div class="text-[9px] uppercase text-slate-500">surf. pH</div><div class="font-mono text-lg text-amber-300">${s.ph}</div></div>
+     <div class="rounded bg-slate-950 p-1.5"><div class="text-[9px] uppercase text-slate-500">EC dS/m</div><div class="font-mono text-lg text-sky-300">${s.ec}</div></div>
+     <div class="rounded bg-slate-950 p-1.5"><div class="text-[9px] uppercase text-slate-500">OM index %</div><div class="font-mono text-lg text-emerald-300">${s.om}</div></div>
+     <div class="rounded bg-slate-950 p-1.5"><div class="text-[9px] uppercase text-slate-500">health</div><div class="font-mono text-lg text-emerald-300">${r.grade}</div></div>
+   </div>
+   ${typeof s.n==="number"?`<div class="mt-1.5 text-[10px] text-slate-400">N ${s.n} ppm (${N_BAND(s.n)[0]}) · P ${s.p} ppm (${P_BAND(s.p)[0]}) · K ${s.k} ppm (${K_BAND(s.k)[0]})</div>`:""}
+   <div class="mt-2 text-[11px] text-slate-400 leading-snug">${s.note}</div>
+   <div class="mt-1.5 text-right text-[10px] ${active?"text-sky-300 font-bold":"text-slate-600"}">${active?"● field soil selected":"tap to select as field soil"}</div>`;
+  el.onclick=()=>{state.soil=id;renderFlora();renderSim();logEv("Field soil diagnostic set to: "+s.name+" ["+s.wrb+"]",{area:state.selected?fmtHa(aoiM2(state.selected)):null,flora:state.flora?state.flora.en:null,rating:r,src:"soil diagnostic substrate"});};
+  body.appendChild(el);});
+ body.insertAdjacentHTML("beforeend",'<div class="text-[10px] text-slate-600 px-1 pt-1">Enter laboratory values in the left sidebar to override any regional baseline.</div>');
+}
+
+/* ═══════ SMART ENGINE (SPEC-6 · static tone maps, no string-built classes) ═══════ */
+const TONE={
+ green:{cls:"border-emerald-700 bg-emerald-950/50",txt:"text-emerald-200"},
+ amber:{cls:"border-amber-700 bg-amber-950/20",txt:"text-amber-200"},
+ red:{cls:"border-red-700 bg-red-950/50",txt:"text-red-200"}};
+function soilBadge(){
+ const f=state.flora,s=SOILS[state.soil];
+ if(!f)return "";
+ const[fLo,fHi]=f.ph,sp=s.ph;
+ if(sp>=fLo&&sp<=fHi){
+  const t=TONE.green;
+  return `<div class="rounded-lg border ${t.cls} ${t.txt} text-[11px] p-2">✔ <b>Soil match:</b> field soil pH ${sp} sits inside ${f.en}'s optimal band (${fLo}–${fHi}).</div>`;}
+ const gap=sp<fLo?fLo-sp:sp-fHi;
+ const key=gap<=0.6?"amber":"red",t=TONE[key];
+ const label=key==="amber"?"Amber caution":"Mismatch";
+ const fix=key==="amber"?"Marginal — compost + gypsum program can bridge the gap.":"Soil amendment required (elemental sulfur lowers / lime raises), or choose a band-tolerant species.";
+ return `<div class="rounded-lg border ${t.cls} ${t.txt} text-[11px] p-2">⚠ <b>${label}:</b> ${f.en} requires pH ${fLo}–${fHi}; selected ${s.name} is pH ${sp}. ${fix}</div>`;
+}
+window.calculateCropRequirements=function(areaHa,item){
+ const rec=findEnriched(item)||state.flora;if(!rec)return null;
+ const m2=areaHa*1e4,plants=Math.floor(m2/(rec.spacing[0]*rec.spacing[1]));
+ return {brand:"Somali SpatialBio Engine",areaHectares:areaHa,species:rec.sci,targetSoilPH:rec.ph.join("–"),plantPopulation:plants,
+         criticalRiskAlert:rec.avoid,waterModel:rec.water.mode==="crop"?`${rec.water.mm} mm/season`:(rec.water.mode==="orchard"?`${rec.water.mm} mm/yr`:`${rec.water.lTreeWeek} L/plant/week establishment`)};
+};
+function findEnriched(item){
+ if(!item)return null;const sci=typeof item==="string"?item:item.scientific_name;
+ for(const [,arr]of DB.fruitGroups)for(const f of arr)if(f.sci===sci)return f;
+ return [...DB.nativeTrees,...DB.crops,...DB.vegetables].find(f=>f.sci===sci)||null;
+}
+function renderSim(){
+ const box=document.getElementById("sim-body");
+ const a=state.selected,f=state.flora;
+ if(!a&&!f){box.innerHTML='<div class="text-xs text-slate-500 py-3 text-center">Draw/select a polygon, then tap any tree / fruit / crop card.<br>The engine scales its agronomy to live area.</div>';return;}
+ if(!f){box.innerHTML='<div class="text-xs text-slate-500 py-3 text-center">AOI ready: <b class="text-emerald-300">'+a.name+'</b> · '+fmtHa(aoiM2(a))+'<br>Now pick an item from the database above.</div>';return;}
+ const m2=a?aoiM2(a):0,ha=m2/1e4;
+ if(!a){box.innerHTML='<div class="text-xs text-slate-500 py-3 text-center">'+f.en+' active. Select or draw its polygon to size the plan.</div>';return;}
+ const plants=Math.floor(m2/(f.spacing[0]*f.spacing[1]));
+ let seedLine,yieldLine,waterLine;
+ if(f.kind==="crop"){
+  const seedVal=(f.seedKgHa||0)>0?`<b class="text-emerald-300">${fnum(f.seedKgHa*ha,1)} kg</b>`:`<b class="text-emerald-300">${f.seedNote||"planting stock"}</b>`;
+  seedLine=`<div><span class="text-slate-500">Seed</span><br>${seedVal} <span class="text-[10px] text-slate-500">${f.seedKgHa?`(${f.seedNote||f.seedKgHa+" kg/ha"})`:""}</span></div>`;
+  yieldLine=`${fnum(f.yieldT[0]*ha,1)} – ${fnum(f.yieldT[1]*ha,1)} t total`;
+  waterLine=`${fnum(ha*f.water.mm*10,0)} m³ <span class="text-[10px] text-slate-500">(${f.water.mm} mm/season)</span>`;
+ }else{
+  seedLine=`<div><span class="text-slate-500">Seedlings</span><br><b class="text-emerald-300">${fnum(plants,0)}</b> <span class="text-[10px] text-slate-500">(nursery stock)</span></div>`;
+  yieldLine=f.kgYr?`${fnum(f.kgYr[0]*plants/1000,2)} – ${fnum(f.kgYr[1]*plants/1000,2)} t/yr`:(f.yieldNote||"qualitative — see Output card");
+  waterLine=f.water.mode==="orchard"?`${fnum(ha*f.water.mm*10,0)} m³/yr <span class="text-[10px] text-slate-500">(${f.water.mm} mm equiv.)</span>`:`${fnum(plants*f.water.lTreeWeek*24/1000,0)} m³ <span class="text-[10px] text-slate-500">(${f.water.lTreeWeek} L/plant/wk × 24 wk)</span>`;
+ }
+ const s=SOILS[state.soil],r=healthScore(s);
+ const npkHtml=typeof s.n==="number"||typeof s.p==="number"||typeof s.k==="number"?
+  `<div class="flex flex-wrap gap-1.5 mb-2 text-[10px]">
+    <span class="rounded px-1.5 py-0.5 border border-${N_BAND(s.n)[1]}-700 text-${N_BAND(s.n)[1]}-300">N ${s.n} ppm ${N_BAND(s.n)[0]}</span>
+    <span class="rounded px-1.5 py-0.5 border border-${P_BAND(s.p)[1]}-700 text-${P_BAND(s.p)[1]}-300">P ${s.p} ppm ${P_BAND(s.p)[0]}</span>
+    <span class="rounded px-1.5 py-0.5 border border-${K_BAND(s.k)[1]}-700 text-${K_BAND(s.k)[1]}-300">K ${s.k} ppm ${K_BAND(s.k)[0]}</span></div>`:"";
+ box.innerHTML=`
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] mb-2">
+    <span>🗺️ <b class="text-emerald-300">${a.name}</b> · ${fmtHa(m2)}</span>
+    <span>🌿 <b class="text-amber-300">${f.somali} — ${f.en}</b></span>
+    <span>🧪 <select onchange="state.soil=this.value;renderSim();renderFlora()" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] max-w-[150px]">
+      ${REGION_ORDER.filter(id=>!SOILS[id].hidden||id===state.soil).map(id=>`<option value="${id}" ${id===state.soil?"selected":""}>${SOILS[id].name.split(" ").slice(0,2).join(" ")}</option>`).join("")}
+    </select></span>
+    <span class="rounded px-1.5 py-0.5 border border-emerald-700 text-emerald-300 text-[10px]">Health ${r.score}/100 · ${r.grade}</span>
+    <button onclick="issueCertificate()" class="ml-auto px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold">📜 Generate certificate</button>
+  </div>
+  ${npkHtml}
+  <div class="grid grid-cols-2 gap-2 mb-2 text-sm">
+    ${seedLine}
+    <div><span class="text-slate-500">Plant population</span><br><b class="text-sky-300">${fnum(plants,0)}</b> <span class="text-[10px] text-slate-500">@ ${f.spacing[0]}×${f.spacing[1]} m</span></div>
+    <div><span class="text-slate-500">Expected yield</span><br><b class="text-amber-300 text-[13px]">${yieldLine}</b></div>
+    <div><span class="text-slate-500">Water demand</span><br><b class="text-cyan-300 text-[13px]">${waterLine}</b></div>
+  </div>
+  ${soilBadge()}`;
+ logSimOnce(a,f,plants);}
+let _lastSimKey="";
+function logSimOnce(a,f,plants){
+ const k=a.id+"|"+f.sci+"|"+plants+"|"+state.soil;if(k===_lastSimKey)return;_lastSimKey=k;
+ logEv(`Simulated soil-crop diagnostic — ${f.en} on ${a.name} → ${fnum(plants,0)} units`,{area:fmtHa(aoiM2(a)),flora:f.en,rating:healthScore(SOILS[state.soil]),src:"SSB smart engine · geodesic area"});}
+
+renderTabs();renderFlora();renderSim();listAois();
+</script>
+</body>
+</html>

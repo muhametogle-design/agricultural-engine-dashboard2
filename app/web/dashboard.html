@@ -66,6 +66,8 @@
 </head>
 <body class="bg-slate-900 text-slate-200 h-screen overflow-hidden flex flex-col">
 
+<a href="/lims" aria-label="Enter LabOps LIMS dashboard" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[1000] inline-flex items-center gap-2 rounded-full border-2 border-violet-300 bg-violet-600 px-5 py-3 text-sm font-extrabold text-white shadow-2xl hover:bg-violet-500 focus:outline-none focus:ring-4 focus:ring-violet-300/50">🧪 ENTER LIMS DASHBOARD →</a>
+
 <header class="h-12 bg-slate-950 border-b border-slate-800 flex items-center gap-3 px-4 z-30 flex-none">
   <button onclick="toggleLeft()" aria-label="Toggle left panel" class="p-1.5 rounded hover:bg-slate-800"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   <div class="flex items-center gap-2.5 select-none" id="brand">
@@ -87,6 +89,7 @@
     </div>
   </div>
   <div class="flex-1"></div>
+  <a href="/lims" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-violet-500 bg-violet-700 text-white hover:bg-violet-600 text-[11px] font-bold shadow-lg" title="Open Laboratory Operations Dashboard">🧪 <span class="hidden sm:inline">Open </span>Lab Dashboard</a>
   <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span id="api-led" class="w-2 h-2 rounded-full bg-slate-600"></span><span id="api-text">API…</span></div>
   <button id="theme-btn" onclick="toggleTheme()" role="switch" aria-checked="true" aria-label="Switch to light mode" title="Toggle light / dark mode"
           class="px-2.5 py-1.5 rounded-lg border border-slate-800 hover:border-emerald-500 text-sm">🌙</button>

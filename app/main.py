@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import __version__
 from app.api.deps import get_settings
@@ -53,6 +54,7 @@ code{{background:#0b120e;padding:2px 6px;border-radius:6px;font-size:13px}}
 <p>version {version} — live sandbox: PostGIS + SoilGrids · NASA POWER · terrain DEM</p>
 <a class="btn" href="/console">Open the map console →</a>
 <a class="btn" href="/dashboard">Open the unified dashboard →</a>
+<a class="btn" href="/lims">Open the laboratory dashboard →</a>
 <a class="btn alt" href="/docs">API reference (Swagger)</a>
 <p style="margin-top:18px">demo login: <code>demo@agri-dss.app</code> / <code>demo-pass-2026</code></p>
 </div></body></html>"""
@@ -116,6 +118,15 @@ def create_app() -> FastAPI:
     @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
     async def dashboard() -> HTMLResponse:
         return HTMLResponse(dashboard_path.read_text(encoding="utf-8"))
+
+    lims_path = Path(__file__).resolve().parent / "web" / "lims.html"
+
+    @app.get("/lims", response_class=HTMLResponse, include_in_schema=False)
+    async def lims() -> HTMLResponse:
+        return HTMLResponse(lims_path.read_text(encoding="utf-8"))
+
+    # Offline-safe libraries used by the laboratory dashboard.
+    app.mount("/web", StaticFiles(directory=dashboard_path.parent), name="web")
 
     return app
 

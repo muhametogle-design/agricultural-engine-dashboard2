@@ -125,7 +125,9 @@ def create_app() -> FastAPI:
     async def lims() -> HTMLResponse:
         return HTMLResponse(lims_path.read_text(encoding="utf-8"))
 
-    # Offline-safe libraries used by the laboratory dashboard.
+    # Offline-safe libraries used by the laboratory dashboard. ``/vendor`` also
+    # keeps lims.html functional when app/web is served by a plain static server.
+    app.mount("/vendor", StaticFiles(directory=dashboard_path.parent / "vendor"), name="vendor")
     app.mount("/web", StaticFiles(directory=dashboard_path.parent), name="web")
 
     return app

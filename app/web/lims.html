@@ -332,10 +332,10 @@ function App() {
   /* Module 6 state — Option-2 asynchronous dictionary engine */
 
 
-  var _useState37 = useState(null),
+  var _useState37 = useState(DISEASE_VECTOR),
       _useState38 = _slicedToArray(_useState37, 2),
       diseases = _useState38[0],
-      setDiseases = _useState38[1]; /* null = still loading (mock API) */
+      setDiseases = _useState38[1]; /* bundled local repository: available immediately */
 
 
   var _useState39 = useState("All"),
@@ -382,19 +382,11 @@ function App() {
   useEffect(function () {
     localStorage.setItem("lims_duty", String(duty.id));
   }, [duty.id]);
+  /* Refresh icon placeholders only when a view that contains icons changes.
+     Running this after every render caused visible repaint/flicker in Chromium. */
   useEffect(function () {
     if (window.lucide) lucide.createIcons();
-  });
-
-  /* Option 2 — mock async API loop: 600ms artificial network latency */
-  useEffect(function () {
-    var t = setTimeout(function () {
-      setDiseases(DISEASE_VECTOR);
-    }, 600);
-    return function () {
-      clearTimeout(t);
-    };
-  }, []);
+  }, [diseases, catTab, selHost, manifest, spectrumOpen, engineers, openCert]);
 
   var diseaseFiltered = useMemo(function () {
     if (!diseases) return [];
@@ -538,7 +530,7 @@ function App() {
   }) || {}).cls || "bg-slate-950";
   var light = spectrum === "light";
 
-  return e("div", { className: themeCls + " min-h-screen " + (light ? "text-slate-900" : "text-slate-100") + " transition-colors duration-500" },
+  return e("div", { className: themeCls + " min-h-screen " + (light ? "text-slate-900" : "text-slate-100") },
   /* ── HEADER ── */
   e("header", { className: "sticky top-0 z-40 border-b border-slate-700/60 bg-black/30 backdrop-blur px-4 h-14 flex items-center gap-3" }, e("div", { className: "font-extrabold tracking-widest text-sm" }, e("span", { className: "text-emerald-400" }, "SOMALI "), e("span", null, "SPATIALBIO "), e("span", { className: "text-sky-400" }, "ENGINE"), e("span", { className: (light ? "text-slate-500" : "text-slate-400") + " font-normal ml-2 text-xs" }, "· LabOps LIMS")), e("a", { href: "/dashboard", className: "text-xs px-2.5 py-1.5 rounded-lg border border-slate-600 hover:border-emerald-500 text-slate-300 flex items-center gap-1" }, e(Icon, { name: "map", cls: "w-3.5 h-3.5" }), "GIS Engine"), e("div", { className: "flex-1" }), e("div", { className: "hidden md:flex items-center gap-2 rounded-full border border-emerald-600/50 bg-emerald-900/30 px-3 py-1.5" }, e("span", { className: "relative flex h-2 w-2" }, e("span", { className: "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" }), e("span", { className: "relative inline-flex rounded-full h-2 w-2 bg-emerald-400" })), e("span", { className: "text-xs" }, "On duty: ", e("b", null, duty.name), e("span", { className: "text-slate-400 font-mono text-[10px] ml-1" }, duty.license))), e("div", { className: "relative" }, e("button", { onClick: function onClick() {
       setSpectrumOpen(!spectrumOpen);

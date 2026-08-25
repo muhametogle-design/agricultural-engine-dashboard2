@@ -69,8 +69,13 @@
   .module-toolbar{background:rgba(15,23,42,.90);border:1px solid #1e293b;backdrop-filter:blur(12px)}
   .module-button{padding:.55rem .8rem;border:1px solid #334155;border-radius:.55rem;color:#cbd5e1;background:rgba(15,23,42,.88);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:.18s ease}
   .module-button:hover,.module-button.active{border-color:#10b981;color:#6ee7b7;background:rgba(6,78,59,.72)}
-  .module-drawer{position:absolute;right:1rem;top:4.5rem;width:min(390px,calc(100vw - 2rem));max-height:calc(100% - 6rem);overflow:auto;z-index:900;background:rgba(15,23,42,.94);border:1px solid #334155;border-radius:.8rem;backdrop-filter:blur(14px);box-shadow:0 18px 45px rgba(0,0,0,.4);padding:1rem}
+  .portal-map-shell{display:flex;position:absolute;inset:0;min-width:0}
+  .portal-map-stage{position:relative;flex:1;min-width:0}
+  .portal-workspace{width:390px;max-width:42%;overflow:auto;background:rgba(15,23,42,.97);border-left:1px solid #334155;backdrop-filter:blur(14px);padding:1rem;z-index:10}
+  .portal-workspace:empty{display:none}
+  .module-drawer{position:static;width:100%;background:transparent;padding:0}
   .module-drawer[hidden]{display:none}
+  @media(max-width:900px){.portal-workspace{position:absolute;right:0;top:0;bottom:0;width:min(390px,88%);max-width:none;z-index:700;box-shadow:-15px 0 35px rgba(0,0,0,.45)}}
   .module-title{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#6ee7b7;margin-bottom:.75rem}
   .metric-row{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid #1e293b;padding:.55rem 0;font-size:12px}
   .metric-row b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#e2e8f0;text-align:right}
@@ -88,6 +93,14 @@
       <div class="text-[10px] text-slate-500 tracking-wide mt-0.5 hidden md:block">GIS  |  Global Flora DB  |  18-Region Soil Engine  |  Smart Simulation  |  Laboratory Analytics</div>
     </div>
   </div>
+  <nav class="module-toolbar rounded-lg p-1 flex gap-1 overflow-x-auto" aria-label="Portal modules">
+    <button class="module-button" data-module="lims">Lab LIMS</button>
+    <button class="module-button" data-module="drought">Drought Monitor</button>
+    <button class="module-button" data-module="fencing">Farm Fencing</button>
+    <button class="module-button" data-module="hydrology">Hydrology</button>
+    <button class="module-button" data-module="geology">Somali Geology</button>
+    <button class="module-button" data-module="soilph">FAO Soil pH</button>
+  </nav>
   <div class="flex-1"></div>
   <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span id="api-led" class="w-2 h-2 rounded-full bg-slate-600"></span><span id="api-text">API…</span></div>
   <button id="theme-btn" onclick="toggleTheme()" role="switch" aria-checked="true" aria-label="Switch to light mode" title="Toggle light / dark mode"
@@ -186,22 +199,17 @@
 
   <!-- ══ MAP ══ -->
   <main class="flex-1 min-w-0 relative">
-    <div id="map" class="absolute inset-0"></div>
-    <div class="module-toolbar absolute left-3 right-3 top-3 z-[800] rounded-xl p-2 flex flex-wrap gap-2" aria-label="Spatial analysis modules">
-      <button class="module-button" data-module="lims">Lab LIMS</button>
-      <button class="module-button" data-module="drought">SWALIM Drought</button>
-      <button class="module-button" data-module="fencing">Farm Fencing</button>
-      <button class="module-button" data-module="hydrology">Hydrology</button>
-      <button class="module-button" data-module="geology">Somali Geology</button>
-      <button class="module-button" data-module="soilph">FAO Soil pH</button>
-    </div>
-
-    <aside class="module-drawer" data-drawer="lims" hidden><div class="module-title">Laboratory Information Management</div><p class="text-xs text-slate-400 mb-3">Open the synchronized laboratory dashboard for sample intake, analytical results, certificates and crop planning.</p><a class="module-button inline-block" href="/lims.html">Enter Lab LIMS</a></aside>
-    <aside class="module-drawer" data-drawer="drought" hidden><div class="module-title">SWALIM Drought Monitoring</div><div class="metric-row"><span>Map centre</span><b>Somalia 5.1521, 46.1996</b></div><div class="metric-row"><span>Monitoring layer</span><b>Drought screening</b></div><p class="text-xs text-slate-400 mt-3">Use the drawing controls to delineate monitoring areas and boundary posts. Detailed Abaar monitoring remains available in the dedicated dashboard.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Abaar Dashboard</a></aside>
-    <aside class="module-drawer" data-drawer="fencing" hidden><div class="module-title">Drawn Fencing Specifications</div><div id="fencing-specs"><div class="metric-row"><span>Features</span><b>0</b></div><div class="metric-row"><span>Total polygon area</span><b>0.00 ha | 0 m2</b></div><div class="metric-row"><span>Linear fence runs</span><b>0 m</b></div><div class="metric-row"><span>Monitoring posts</span><b>0</b></div></div><p class="text-xs text-slate-500 mt-3">Use the Leaflet drawing control on the map. Polygon, polyline and marker measurements update here immediately.</p></aside>
+    <div class="portal-map-shell">
+      <div class="portal-map-stage"><div id="map" class="absolute inset-0"></div></div>
+      <section id="portal-workspace" class="portal-workspace" hidden>
+    <aside class="module-drawer" data-drawer="lims" hidden><div class="module-title">Laboratory Information Management</div><p class="text-xs text-slate-400 mb-3">Geological parent material is synchronized with laboratory expectations.</p><div id="lims-geology-metrics"><div class="metric-row"><span>Parent material</span><b>No formation selected</b></div><div class="metric-row"><span>Expected pH influence</span><b>--</b></div></div><a class="module-button inline-block mt-3" href="/lims.html">Enter Full LIMS</a></aside>
+    <aside class="module-drawer" data-drawer="drought" hidden><div class="module-title">SWALIM Drought Monitoring</div><div id="drought-geology-metrics"><div class="metric-row"><span>Regional vulnerability</span><b>Baseline</b></div><div class="metric-row"><span>Permeability</span><b>--</b></div><div class="metric-row"><span>Groundwater potential</span><b>--</b></div></div><p class="text-xs text-slate-400 mt-3">Selected geology dynamically adjusts infiltration and groundwater resilience context.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Full Drought Map</a></aside>
+    <aside class="module-drawer" data-drawer="fencing" hidden><div class="module-title">Drawn Fencing Specifications</div><div class="flex flex-wrap gap-2 mb-3"><button class="module-button" data-spatial-draw="polygon">Farm Polygon</button><button class="module-button" data-spatial-draw="polyline">Fence Run</button><button class="module-button" data-spatial-draw="marker">Monitoring Post</button><button class="module-button" data-spatial-draw="clear">Clear</button></div><div id="fencing-specs"><div class="metric-row"><span>Features</span><b>0</b></div><div class="metric-row"><span>Total polygon area</span><b>0.00 ha | 0 m2</b></div><div class="metric-row"><span>Linear fence runs</span><b>0 m</b></div><div class="metric-row"><span>Monitoring posts</span><b>0</b></div></div><p class="text-xs text-slate-500 mt-3">Use the Leaflet drawing control on the map. Polygon, polyline and marker measurements update here immediately.</p></aside>
     <aside class="module-drawer" data-drawer="hydrology" hidden><div class="module-title">Hydrology and Groundwater</div><div class="metric-row"><span>Aquifer screening</span><b>Available</b></div><div class="metric-row"><span>Well siting engine</span><b>VES + terrain MCE</b></div><p class="text-xs text-slate-400 mt-3">Review indicative groundwater zones, place hydrological boundary markers, and continue to the groundwater dashboard for aquifer and solar-pump tools.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Groundwater Tools</a></aside>
     <aside class="module-drawer" data-drawer="geology" hidden><div class="module-title">Somali Geology</div><div id="geology-status" class="text-xs text-slate-400">Loading geological formations...</div><div id="geology-properties" class="mt-3"><div class="metric-row"><span>Formation Name</span><b>Select a unit</b></div><div class="metric-row"><span>Lithology</span><b>--</b></div><div class="metric-row"><span>Stratigraphic Era</span><b>--</b></div></div></aside>
     <aside class="module-drawer" data-drawer="soilph" hidden><div class="module-title">FAO Soil pH</div><div class="metric-row"><span>Dataset</span><b>FAO / IIASA HWSD v2</b></div><div class="metric-row"><span>Measurement</span><b>Topsoil pH</b></div><p class="text-xs text-slate-400 mt-3">Draw or select an area, then use Laboratory Analytics to sample the FAO soil baseline or apply measured field results.</p></aside>
+      </section>
+    </div>
   </main>
 
   <!-- ══ RIGHT SIDEBAR ══ -->
@@ -401,20 +409,30 @@ pingApi();
 /* ═══════════════ UNIFIED MODULE DRAWERS + SPATIAL ANALYSIS ═══════════════ */
 const moduleButtons=[...document.querySelectorAll("[data-module]")];
 const moduleDrawers=[...document.querySelectorAll("[data-drawer]")];
+const portalWorkspace=document.getElementById("portal-workspace");
 function openModule(name){
  moduleButtons.forEach(b=>b.classList.toggle("active",b.dataset.module===name));
  moduleDrawers.forEach(d=>d.hidden=d.dataset.drawer!==name);
+ portalWorkspace.hidden=!name;
+ if(name)localStorage.setItem("gis_portal_module",name);else localStorage.removeItem("gis_portal_module");
  if(name==="geology")loadGeology();
- setTimeout(()=>map.invalidateSize(),0);
+ setTimeout(()=>map.invalidateSize(),80);
 }
 moduleButtons.forEach(b=>b.addEventListener("click",()=>openModule(b.classList.contains("active")?null:b.dataset.module)));
+map.on("moveend",()=>localStorage.setItem("gis_map_view",JSON.stringify({center:map.getCenter(),zoom:map.getZoom()})));
+try{const saved=JSON.parse(localStorage.getItem("gis_map_view")||"null");if(saved)map.setView([saved.center.lat,saved.center.lng],saved.zoom);}catch{}
+setTimeout(()=>openModule(localStorage.getItem("gis_portal_module")||null),0);
 
 const analyticalDrawings=new L.FeatureGroup().addTo(map);
-if(L.Control.Draw){
- map.addControl(new L.Control.Draw({position:"topright",edit:{featureGroup:analyticalDrawings},draw:{polygon:{shapeOptions:{color:"#10b981",weight:2}},polyline:{shapeOptions:{color:"#38bdf8",weight:3}},marker:true,rectangle:false,circle:false,circlemarker:false}}));
+if(L.Draw){
+ document.querySelectorAll("[data-spatial-draw]").forEach(button=>button.addEventListener("click",()=>{
+  const tool=button.dataset.spatialDraw;
+  if(tool==="clear"){analyticalDrawings.clearLayers();updateFencingSpecifications();return;}
+  const options=tool==="polygon"?{shapeOptions:{color:"#10b981",weight:2}}:tool==="polyline"?{shapeOptions:{color:"#38bdf8",weight:3}}:{};
+  const DrawClass=tool==="polygon"?L.Draw.Polygon:tool==="polyline"?L.Draw.Polyline:L.Draw.Marker;
+  new DrawClass(map,options).enable();
+ }));
  map.on(L.Draw.Event.CREATED,e=>{analyticalDrawings.addLayer(e.layer);updateFencingSpecifications();openModule("fencing");});
- map.on(L.Draw.Event.EDITED,updateFencingSpecifications);
- map.on(L.Draw.Event.DELETED,updateFencingSpecifications);
 }
 function updateFencingSpecifications(){
  let area=0,length=0,posts=0,features=0;
@@ -430,9 +448,20 @@ function updateFencingSpecifications(){
  rows.innerHTML=`<div class="metric-row"><span>Features</span><b>${features}</b></div><div class="metric-row"><span>Total polygon area</span><b>${(area/10000).toFixed(2)} ha | ${area.toFixed(0)} m2</b></div><div class="metric-row"><span>Linear fence runs</span><b>${length.toFixed(1)} m</b></div><div class="metric-row"><span>Monitoring posts</span><b>${posts}</b></div>`;
 }
 
-let geologyLayer=null,geologyPromise=null;
-const lithologyColors={limestone:"#3b82f6",sandstone:"#f97316",basalt:"#ef4444",alluvium:"#fde047","basement rock":"#a855f7",basement:"#a855f7"};
+let geologyLayer=null,geologyPromise=null,selectedGeologyLayer=null;
+const lithologyColors={limestone:"#647f9f",sandstone:"#c58a45",basalt:"#8f3042",volcanic:"#8f3042",alluvium:"#b7a66a","basement rock":"#596579",basement:"#596579"};
 function geologyColor(value){const v=String(value||"").toLowerCase();for(const [key,color] of Object.entries(lithologyColors))if(v.includes(key))return color;return "#64748b";}
+function phInfluence(lithology){const v=String(lithology).toLowerCase();if(v.includes("limestone"))return "Alkaline tendency; higher base saturation";if(v.includes("basalt"))return "Mineral-rich parent material; neutral tendency";if(v.includes("sandstone"))return "Low buffering; verify acidity locally";if(v.includes("alluvium"))return "Variable mixed parent material";return "Site laboratory confirmation required";}
+function droughtVulnerability(permeability,groundwater){const p=String(permeability).toLowerCase(),g=String(groundwater).toLowerCase();if(p.includes("low")&&g.includes("low"))return "High";if(p.includes("high")||g.includes("high"))return "Lower";return "Moderate";}
+function selectGeologyFeature(layer,properties){
+ if(selectedGeologyLayer&&geologyLayer)geologyLayer.resetStyle(selectedGeologyLayer);
+ selectedGeologyLayer=layer;layer.setStyle({color:"#10b981",weight:4,fillOpacity:.58});layer.bringToFront();
+ const p=properties;
+ document.getElementById("geology-properties").innerHTML=`<div class="metric-row"><span>Formation Name</span><b>${p.formation_name}</b></div><div class="metric-row"><span>Lithology</span><b>${p.lithology}</b></div><div class="metric-row"><span>Era</span><b>${p.era}</b></div><div class="metric-row"><span>Permeability</span><b>${p.permeability_class}</b></div><div class="metric-row"><span>Groundwater Potential</span><b>${p.groundwater_potential}</b></div>`;
+ document.getElementById("lims-geology-metrics").innerHTML=`<div class="metric-row"><span>Parent material</span><b>${p.lithology}</b></div><div class="metric-row"><span>Expected pH influence</span><b>${phInfluence(p.lithology)}</b></div>`;
+ document.getElementById("drought-geology-metrics").innerHTML=`<div class="metric-row"><span>Regional vulnerability</span><b>${droughtVulnerability(p.permeability_class,p.groundwater_potential)}</b></div><div class="metric-row"><span>Permeability</span><b>${p.permeability_class}</b></div><div class="metric-row"><span>Groundwater potential</span><b>${p.groundwater_potential}</b></div>`;
+ localStorage.setItem("gis_selected_geology",JSON.stringify(p));window.dispatchEvent(new CustomEvent("gis:geology-selected",{detail:p}));
+}
 async function loadGeology(){
  if(geologyLayer){geologyLayer.addTo(map);return geologyPromise;}
  if(geologyPromise)return geologyPromise;
@@ -442,16 +471,22 @@ async function loadGeology(){
   const sources=["/static/data/somalia_geology.geojson","/somalia_geology.geojson","https://raw.githubusercontent.com/muhametogle-design/agricultural-engine-dashboard/main/static/data/somalia_geology.geojson"];
   for(const url of sources){try{const r=await fetch(url);if(r.ok){data=await r.json();break;}}catch(e){error=e;}}
   if(!data){status.textContent="Geology dataset unavailable. Add /static/data/somalia_geology.geojson.";throw error||new Error("Geology unavailable");}
-  geologyLayer=L.geoJSON(data,{style:f=>({color:"#0f172a",weight:1,fillColor:geologyColor(f.properties?.lithology),fillOpacity:.58}),onEachFeature:(f,l)=>{
-   const p=f.properties||{},formation=p.formation_name||p.formation||p.name||"Unnamed formation",lith=p.lithology||"Not specified",era=p.stratigraphic_era||p.era||p.age||"Not specified";
-   const popup=`<div style="font-family:system-ui;min-width:180px"><b>${formation}</b><br>Formation Name: ${formation}<br>Lithology: ${lith}<br>Stratigraphic Era: ${era}</div>`;
-   l.bindPopup(popup);l.on("click",()=>{document.getElementById("geology-properties").innerHTML=`<div class="metric-row"><span>Formation Name</span><b>${formation}</b></div><div class="metric-row"><span>Lithology</span><b>${lith}</b></div><div class="metric-row"><span>Stratigraphic Era</span><b>${era}</b></div>`;});
+  const baseStyle=f=>({color:"#334155",weight:1,fillColor:geologyColor(f.properties?.lithology),fillOpacity:.45});
+  geologyLayer=L.geoJSON(data,{style:baseStyle,onEachFeature:(f,l)=>{
+   const p=f.properties||{},formation=p.formation_name||p.formation||p.name||"Unnamed formation",lith=p.lithology||"Not specified",era=p.era||p.stratigraphic_era||p.age||"Not specified",permeability=p.permeability_class||"Moderate",groundwater=p.groundwater_potential||"Moderate";
+   const popup=`<div style="font-family:system-ui;min-width:200px"><b>${formation}</b><br>Formation Name: ${formation}<br>Lithology: ${lith}<br>Era: ${era}<br>Permeability: ${permeability}<br>Groundwater Potential: ${groundwater}</div>`;
+   l.bindPopup(popup);
+   l.on("mouseover",()=>{if(l!==selectedGeologyLayer)l.setStyle({color:"#94a3b8",weight:2,fillOpacity:.55});});
+   l.on("mouseout",()=>{if(l!==selectedGeologyLayer)l.setStyle(baseStyle(f));});
+   l.on("click",()=>selectGeologyFeature(l,{formation_name:formation,lithology:lith,era,permeability_class:permeability,groundwater_potential:groundwater}));
   }}).addTo(map);
-  status.textContent=`${geologyLayer.getLayers().length} geological units loaded. Blue: limestone | Orange: sandstone | Red: basalt | Yellow: alluvium | Purple: basement rock.`;
+  status.textContent=`${geologyLayer.getLayers().length} geological units loaded. Select a formation to synchronize laboratory and drought metrics.`;
+  try{const saved=JSON.parse(localStorage.getItem("gis_selected_geology")||"null");if(saved){const match=geologyLayer.getLayers().find(x=>(x.feature?.properties?.formation_name||x.feature?.properties?.name)===saved.formation_name);if(match)selectGeologyFeature(match,saved);}}catch{}
   return geologyLayer;
  })().catch(e=>{console.warn(e);geologyPromise=null;});
  return geologyPromise;
 }
+setTimeout(loadGeology,0);
 
 /* ═══════════════════════════════════════════════════════════════════════
    SEED CATALOG — Somali Flora Field-Manual schema (verbatim):

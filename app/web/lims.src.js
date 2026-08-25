@@ -1183,6 +1183,8 @@ function App(){
   }
 
   const themeCls = (SPECTRUM.find(function(s){return s.id===spectrum;})||{}).cls || "bg-slate-950";
+  let geologySelection=null;try{geologySelection=JSON.parse(localStorage.getItem("gis_selected_geology")||"null");}catch(_){}
+  const geologyPhInfluence=geologySelection?(String(geologySelection.lithology).toLowerCase().includes("limestone")?"Alkaline parent material; expect higher base saturation":String(geologySelection.lithology).toLowerCase().includes("sandstone")?"Low buffering parent material; verify acidity":"Parent material requires laboratory confirmation"):"";
 
   return e("div",{className:themeCls+" min-h-screen text-slate-100 transition-colors duration-500"},
     /* ── HEADER ── */
@@ -1208,6 +1210,10 @@ function App(){
             className:"w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-left hover:bg-slate-800 "+(s.id===spectrum?"text-emerald-300":"text-slate-300")},
             e("span",{className:"w-3.5 h-3.5 rounded-full border border-white/20",style:{backgroundColor:s.swatch}}),s.label);}))),
     ),
+    geologySelection && e("section",{className:"mx-3 sm:mx-4 mt-3 rounded-xl border border-sky-800 bg-sky-950/30 px-4 py-3 text-xs"},
+      e("div",{className:"uppercase tracking-widest text-sky-300 font-bold"},"GIS Geology Context"),
+      e("div",{className:"mt-1 text-slate-300"},geologySelection.formation_name," | ",geologySelection.lithology," | ",geologySelection.era),
+      e("div",{className:"mt-1 text-slate-400"},geologyPhInfluence)),
 
     /* ── LAYOUT ── */
     e("div",{className:"grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-3 sm:gap-4 p-3 sm:p-4"},

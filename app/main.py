@@ -155,6 +155,7 @@ def create_app() -> FastAPI:
         "dawaad-map.css": "text/css",
         "dawaad-map.js": "text/javascript",
         "pastoral-tools.js": "text/javascript",
+        "geology-overlay.js": "text/javascript",
         "drought.mock.json": "application/json",
         "dawaad.aquifers.geojson": "application/geo+json",
         "somalia_unified.geojson": "application/geo+json",

@@ -128,6 +128,7 @@
   <script src="/vendor/leaflet/leaflet.js"></script>
   <script src="/pastoral-tools.js"></script>
   <script src="/dawaad-map.js"></script>
+  <script src="/geology-overlay.js"></script>
   <script>
     function renderMonitoringStatus(status) {
       const source = document.getElementById("monitoring-source");
@@ -184,6 +185,10 @@
     document.getElementById("pastoral-tools-close").addEventListener("click", () => setPastoralToolsOpen(false));
 
     const map = component.getMap();
+    SomaliaGeology.addTo(map, {onSelect(properties) {
+      const vulnerability = String(properties.permeability_class).toLowerCase().includes("low") && String(properties.groundwater_potential).toLowerCase().includes("low") ? "HIGH" : String(properties.groundwater_potential).toLowerCase().includes("high") ? "LOWER" : "MODERATE";
+      document.getElementById("monitoring-source").textContent = `${properties.formation_name} | ${properties.lithology} | ${properties.permeability_class} permeability | ${vulnerability} geological drought vulnerability`;
+    }}).then(layer => component.controls.layers.addOverlay(layer, "Somali Geology")).catch(console.warn);
     map.createPane("dawaadAquifers");
     map.getPane("dawaadAquifers").style.zIndex = "450";
     const aquiferWidget = new PastoralTools.AquiferOverlayWidget(map, {

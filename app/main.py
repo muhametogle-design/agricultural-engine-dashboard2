@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__
@@ -125,10 +125,28 @@ def create_app() -> FastAPI:
     async def lims() -> HTMLResponse:
         return HTMLResponse(lims_path.read_text(encoding="utf-8"))
 
-    # Offline-safe libraries used by the laboratory dashboard. ``/vendor`` also
-    # keeps lims.html functional when app/web is served by a plain static server.
-    app.mount("/vendor", StaticFiles(directory=dashboard_path.parent / "vendor"), name="vendor")
-    app.mount("/web", StaticFiles(directory=dashboard_path.parent), name="web")
+    # Offline-safe libraries used by the laboratory dashboard. These root asset
+    # routes also keep lims.html functional under the documented plain static server.
+    web_dir = dashboard_path.parent
+
+    @app.get("/agri.shared.js", include_in_schema=False)
+    async def agri_shared_js() -> FileResponse:
+        return FileResponse(web_dir / "agri.shared.js", media_type="text/javascript")
+
+    @app.get("/agri.store.js", include_in_schema=False)
+    async def agri_store_js() -> FileResponse:
+        return FileResponse(web_dir / "agri.store.js", media_type="text/javascript")
+
+    @app.get("/agri.i18n.js", include_in_schema=False)
+    async def agri_i18n_js() -> FileResponse:
+        return FileResponse(web_dir / "agri.i18n.js", media_type="text/javascript")
+
+    @app.get("/lims.src.js", include_in_schema=False)
+    async def lims_source_js() -> FileResponse:
+        return FileResponse(web_dir / "lims.src.js", media_type="text/javascript")
+
+    app.mount("/vendor", StaticFiles(directory=web_dir / "vendor"), name="vendor")
+    app.mount("/web", StaticFiles(directory=web_dir), name="web")
 
     return app
 

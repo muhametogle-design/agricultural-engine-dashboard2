@@ -9,6 +9,8 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Shared with LIMS so both applications expose the same plant/tree catalog. -->
+<script src="/agri.shared.js"></script>
 <style>
   ::-webkit-scrollbar{width:6px;height:6px}
   ::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
@@ -690,6 +692,41 @@ const DB={
  vegetables:VEG_JSON.map(e=>enrich(e,"crop","veg")),
 };
 
+/* Keep GIS inventory synchronized with the LIMS v9 regional catalog. The
+   shared catalog contributes named varieties—not just generic species—so a
+   farmer sees the same choices in planning and laboratory workflows. */
+(function syncLimsCatalog(){
+ const shared=window.AGRI_SHARED;
+ if(!shared||!Array.isArray(shared.catalog))return;
+ const known=new Set([
+  ...DB.nativeTrees,...DB.crops,...DB.vegetables,...DB.fruitGroups.flatMap(x=>x[1])
+ ].map(x=>x.en.toLowerCase()));
+ const syncedFruits=[];
+ const make=(x,kind,group)=>({
+  somali:x.categorySo||x.category||"Geed",en:x.name,sci:x.family||"Regional variety",
+  season:(x.seasons||[]).join(" · ")||"Confirm the local planting window",
+  output:kind==="tree"?"Named LIMS orchard/tree variety; output depends on age and field management.":"Named LIMS crop variety; obtain a local trial yield before budgeting.",
+  care:`${x.rootDepth||"Medium"} roots · ${x.nitrogenDemand||"balanced fertility"} · ${x.region||"regional catalog"}`,
+  ph:[Number(x.minPh)||5.5,Number(x.maxPh)||8],
+  avoid:"Do not commit the full field before a local variety trial and certified planting-material check.",
+  group,kind,icon:kind==="tree"?"🌳":group==="veg"?"🥬":"🌾",
+  spacing:kind==="tree"?[8,8]:[0.75,0.25],seedKgHa:kind==="crop"?10:undefined,
+  yieldT:kind==="crop"?[0,0]:undefined,yieldNote:"Site-specific yield trial required",
+  water:kind==="tree"?{mode:"tree",lTreeWeek:30}:{mode:"crop",mm:500},limsId:x.id,source:"LIMS v9 synchronized catalog"
+ });
+ shared.catalog.forEach(x=>{
+  if(!x||!x.name||known.has(x.name.toLowerCase()))return;
+  known.add(x.name.toLowerCase());
+  if(x.category==="Tree")DB.nativeTrees.push(make(x,"tree","native"));
+  else if(x.category==="Fruits"){
+   const perennial=(Number(x.maturityDays)||0)>365;
+   syncedFruits.push(make(x,perennial?"tree":"crop","g10"));
+  }else if(x.category==="Vegetables")DB.vegetables.push(make(x,"crop","veg"));
+  else DB.crops.push(make(x,"crop","crop"));
+ });
+ if(syncedFruits.length)DB.fruitGroups.push(["🧪 LIMS synchronized varieties",syncedFruits]);
+})();
+
 /* ═══════ SPEC-5 · LAB OVERRIDE + NPK sufficiency + health score ═══════ */
 const N_BAND=v=>v==null?["untested","slate"]:v<10?["LOW","red"]:v<=25?["adequate","emerald"]:["HIGH","sky"];
 const P_BAND=v=>v==null?["untested","slate"]:v<5?["LOW","red"]:v<=15?["adequate","emerald"]:["HIGH","sky"];
@@ -819,7 +856,13 @@ function issueCertificate(){
 
 /* ═══════ TABS / RENDER (SPEC-3 · distinct global containers) ═══════ */
 const tabsBox=document.getElementById("tabs");
-const TABS=[{id:"nativeTrees",label:"★ Native trees"},{id:"fruits",label:"🍇 Fruits — global"},{id:"crops",label:"🌾 Crops — global"},{id:"vegetables",label:"🥬 Vegetables"},{id:"soil",label:"🧪 Soil engine"}];
+const TABS=[
+ {id:"nativeTrees",label:`★ Native trees (${DB.nativeTrees.length})`},
+ {id:"fruits",label:`🍇 Fruits (${DB.fruitGroups.reduce((n,x)=>n+x[1].length,0)})`},
+ {id:"crops",label:`🌾 Crops (${DB.crops.length})`},
+ {id:"vegetables",label:`🥬 Vegetables (${DB.vegetables.length})`},
+ {id:"soil",label:"🧪 Soil engine"}
+];
 let activeTab="nativeTrees";
 function renderTabs(){tabsBox.innerHTML="";TABS.forEach(t=>{const b=document.createElement("button");b.textContent=t.label;
  b.className="px-2.5 py-1 rounded-md border border-slate-700 bg-slate-900 text-slate-400 "+(t.id===activeTab?"tab-active":"");

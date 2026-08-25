@@ -4,13 +4,14 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import __version__
 from app.api.deps import get_settings
-from app.api.routes import analysis, auth, clients, environmental, fields, health, lab, plans, ves
+from app.api.routes import analysis, auth, clients, environmental, fields, health, lab, plans, swalim, ves
 from app.core.errors import AppError
 from app.core.logging import configure_logging, get_logger
 from app.db.pool import close_pool, create_pool
@@ -53,6 +54,7 @@ code{{background:#0b120e;padding:2px 6px;border-radius:6px;font-size:13px}}
 <p>version {version} — live sandbox: PostGIS + SoilGrids · NASA POWER · terrain DEM</p>
 <a class="btn" href="/console">Open the map console →</a>
 <a class="btn" href="/dashboard">Open the unified dashboard →</a>
+<a class="btn" href="/lims">Open the laboratory dashboard →</a>
 <a class="btn alt" href="/docs">API reference (Swagger)</a>
 <p style="margin-top:18px">demo login: <code>demo@agri-dss.app</code> / <code>demo-pass-2026</code></p>
 </div></body></html>"""
@@ -91,7 +93,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     api_prefix = "/api/v1"
     for r in (auth.router, clients.router, fields.router, environmental.router,
-              ves.router, analysis.router, plans.router, lab.router):
+              ves.router, analysis.router, plans.router, lab.router, swalim.router):
         app.include_router(r, prefix=api_prefix)
 
     @app.get("/api")
@@ -116,6 +118,62 @@ def create_app() -> FastAPI:
     @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
     async def dashboard() -> HTMLResponse:
         return HTMLResponse(dashboard_path.read_text(encoding="utf-8"))
+
+    lims_path = Path(__file__).resolve().parent / "web" / "lims.html"
+
+    @app.get("/lims", response_class=HTMLResponse, include_in_schema=False)
+    async def lims() -> HTMLResponse:
+        return HTMLResponse(lims_path.read_text(encoding="utf-8"))
+
+    dawaad_path = Path(__file__).resolve().parent / "web" / "dawaad.html"
+
+    @app.get("/dawaad", response_class=HTMLResponse, include_in_schema=False)
+    async def dawaad() -> HTMLResponse:
+        return HTMLResponse(dawaad_path.read_text(encoding="utf-8"))
+
+    # Offline-safe libraries used by the laboratory dashboard. These root asset
+    # routes also keep lims.html functional under the documented plain static server.
+    web_dir = dashboard_path.parent
+
+    @app.get("/agri.shared.js", include_in_schema=False)
+    async def agri_shared_js() -> FileResponse:
+        return FileResponse(web_dir / "agri.shared.js", media_type="text/javascript")
+
+    @app.get("/agri.store.js", include_in_schema=False)
+    async def agri_store_js() -> FileResponse:
+        return FileResponse(web_dir / "agri.store.js", media_type="text/javascript")
+
+    @app.get("/agri.i18n.js", include_in_schema=False)
+    async def agri_i18n_js() -> FileResponse:
+        return FileResponse(web_dir / "agri.i18n.js", media_type="text/javascript")
+
+    @app.get("/lims.src.js", include_in_schema=False)
+    async def lims_source_js() -> FileResponse:
+        return FileResponse(web_dir / "lims.src.js", media_type="text/javascript")
+
+    abaar_assets = {
+        "dawaad-map.css": "text/css",
+        "dawaad-map.js": "text/javascript",
+        "pastoral-tools.js": "text/javascript",
+        "geology-overlay.js": "text/javascript",
+        "drought.mock.json": "application/json",
+        "dawaad.aquifers.geojson": "application/geo+json",
+        "somalia_unified.geojson": "application/geo+json",
+        "somalia_geology.geojson": "application/geo+json",
+        "fao_soil_ph.geojson": "application/geo+json",
+        "soil_data.geojson": "application/geo+json",
+        "soil_style.json": "application/json",
+    }
+
+    @app.get("/{asset_name}", include_in_schema=False)
+    async def abaar_asset(asset_name: str) -> FileResponse:
+        media_type = abaar_assets.get(asset_name)
+        if media_type is None:
+            raise HTTPException(status_code=404)
+        return FileResponse(web_dir / asset_name, media_type=media_type)
+
+    app.mount("/vendor", StaticFiles(directory=web_dir / "vendor"), name="vendor")
+    app.mount("/web", StaticFiles(directory=web_dir), name="web")
 
     return app
 

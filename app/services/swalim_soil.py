@@ -38,6 +38,12 @@ from app.services.swalim import SWALIM_WFS
 # layers are tolerated; override with AGRI_SWALIM_SOIL_PH_LAYERS="a,b".
 # ---------------------------------------------------------------------------
 SOIL_PH_LAYERS: dict[str, str] = {
+    # National Somalia soil map 1:250k (SWALIM 2020). The CSW metadata advertises
+    # geonode:som_soil_250k (bbox = whole country) but the public WFS has not
+    # exposed it recently; kept as a tolerated candidate so it lights up the
+    # moment SWALIM re-publishes it. National coverage is otherwise guaranteed
+    # by the packaged generalized base (see get_swalim_soil_ph).
+    "som_soil_250k": "geonode:som_soil_250k",
     # National-north semi-detailed soil map 1:100k (soil series + prefix).
     "soil_100k_n": "geonode:soil_100k_n_faoswalim",
     # Semi-detailed riverine soil surveys 1:25k (land units + WRB 2022).
@@ -167,6 +173,31 @@ def suitability_warnings(ph: float, classification_text: str = "") -> list[str]:
     return warnings
 
 
+def _is_bbox_geometry(geometry: Any) -> bool:
+    """True for perfect axis-aligned 4-corner rectangles (grid/envelope bounds)."""
+    if not isinstance(geometry, dict):
+        return False
+    gtype, coords = geometry.get("type"), geometry.get("coordinates")
+    rings_out: list[list] = []
+    if gtype == "Polygon":
+        rings_out = coords or []
+    elif gtype == "MultiPolygon":
+        rings_out = [ring for poly in (coords or []) for ring in poly]
+    for ring in rings_out:
+        pts = [tuple(pt) for pt in (ring or [])][:-1]  # drop closure point
+        if len(pts) == 4:
+            xs = {pt[0] for pt in pts}
+            ys = {pt[1] for pt in pts}
+            if len(xs) == 2 and len(ys) == 2:
+                return True
+    return False
+
+
+def _is_thematic_polygon(geometry: Any) -> bool:
+    """Only internal Polygon / MultiPolygon geometries are ever rendered."""
+    return isinstance(geometry, dict) and geometry.get("type") in ("Polygon", "MultiPolygon")
+
+
 def _frame_like(props: dict[str, Any]) -> bool:
     if any(props.get(key) for key in _FRAME_KEYS):
         return True
@@ -200,7 +231,7 @@ def _swalim_text(props: dict[str, Any]) -> str:
 def transform_swalim_feature(feature: dict[str, Any], source_layer: str) -> dict[str, Any] | None:
     """Normalize one official SWALIM soil polygon into the portal pH schema."""
     props = feature.get("properties") or {}
-    if _frame_like(props):
+    if _frame_like(props) or _is_bbox_geometry(feature.get("geometry")) or not _is_thematic_polygon(feature.get("geometry")):
         return None
     text = _swalim_text(props)
     wrb = str(props.get("wrb_2022") or "").strip() or None
@@ -231,10 +262,10 @@ def transform_swalim_feature(feature: dict[str, Any], source_layer: str) -> dict
     }
 
 
-def _transform_fallback_feature(feature: dict[str, Any]) -> dict[str, Any] | None:
+def _transform_fallback_feature(feature: dict[str, Any], source_tag: str = "packaged_snapshot") -> dict[str, Any] | None:
     """Normalize a packaged-snapshot polygon into the same live schema."""
     props = feature.get("properties") or {}
-    if _frame_like(props):
+    if _frame_like(props) or _is_bbox_geometry(feature.get("geometry")) or not _is_thematic_polygon(feature.get("geometry")):
         return None
     ph = props.get("pH_VALUE") if isinstance(props.get("pH_VALUE"), (int, float)) else props.get("ph")
     try:
@@ -257,7 +288,7 @@ def _transform_fallback_feature(feature: dict[str, Any]) -> dict[str, Any] | Non
         "geometry": feature.get("geometry"),
         "properties": {
             "feature_type": "swalim_soil_ph",
-            "source_layer": "packaged_snapshot",
+            "source_layer": source_tag,
             "unit_name": props.get("unit") or "Somalia soil unit",
             "unit_code": props.get("FAO_UNIT"),
             "series_name": props.get("SOIL_TYPE") or props.get("FAO_UNIT") or "SWALIM soil unit",
@@ -286,8 +317,10 @@ def _collection(features: list[dict[str, Any]], source: str, layers: dict[str, i
             "feature_count": len(features),
             "ph_classes": PH_CLASSES,
             "provenance_note": (
-                "pH_VALUE is a screening estimate harmonized from the official SWALIM "
-                "soil classification (WRB / soil series); confirm with laboratory analysis."
+                "National coverage = generalized national base + official SWALIM WFS detail "
+                "insets (maxFeatures=50000, unpaginated). pH_VALUE is a screening estimate "
+                "harmonized from the SWALIM WRB / soil-series classification; confirm with "
+                "laboratory analysis."
             ),
             "generated_at": datetime.now(timezone.utc).isoformat(),
         },
@@ -300,9 +333,10 @@ async def get_swalim_soil_ph(
     fallback_geojson: Path,
     cache_ttl_s: int = 3600,
     force_refresh: bool = False,
-    max_features: int = 5000,
+    max_features: int = 50000,
 ) -> tuple[dict[str, Any], str]:
-    """Merged live SWALIM soil-pH layer with TTL cache and snapshot fallback."""
+    """Merged SWALIM soil-pH layer with TTL cache: national generalized base +
+    official WFS detail insets, guaranteeing 100% Somalia extent."""
     now = time.monotonic()
     cached = _CACHE.get(_CACHE_KEY)
     if cached and not force_refresh and now - cached[0] < cache_ttl_s:
@@ -333,20 +367,30 @@ async def get_swalim_soil_ph(
             except (httpx.HTTPError, ValueError, json.JSONDecodeError):
                 continue  # tolerate per-layer outages; merge whatever published
 
-        if features:
-            source = "official-wfs"
-            data = _collection(features, source, layer_counts)
-        else:
-            try:
-                snapshot = json.loads(fallback_geojson.read_text(encoding="utf-8"))
-                features = [
-                    t for t in (_transform_fallback_feature(f) for f in snapshot.get("features", []))
-                    if t is not None and t.get("geometry")
-                ]
-            except (OSError, json.JSONDecodeError) as exc:
+        try:
+            snapshot = json.loads(fallback_geojson.read_text(encoding="utf-8"))
+            base_features = [
+                t for t in (_transform_fallback_feature(f, source_tag="national_base")
+                            for f in snapshot.get("features", []))
+                if t is not None and t.get("geometry")
+            ]
+        except (OSError, json.JSONDecodeError) as exc:
+            base_features = []
+            if not features:
                 raise ValueError(f"SWALIM WFS unreachable and snapshot unreadable: {exc}") from exc
+
+        # National generalized base first (renders beneath), live WFS detail insets
+        # on top: full-country coverage plus official survey polygons where published.
+        layer_counts = {"national_base": len(base_features), **layer_counts}
+        features = base_features + features
+
+        if len(features) > len(base_features):
+            source = "official-wfs"
+        elif base_features:
             source = "static-fallback"
-            data = _collection(features, source, {"packaged_snapshot": len(features)})
+        else:
+            raise ValueError("SWALIM WFS unreachable and no snapshot features available")
+        data = _collection(features, source, layer_counts)
 
         _CACHE[_CACHE_KEY] = (time.monotonic(), data, source)
         return data, source

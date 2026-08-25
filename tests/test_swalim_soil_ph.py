@@ -17,7 +17,7 @@ SNAPSHOT = Path(__file__).resolve().parents[1] / "app" / "web" / "soil_data.geoj
 WFS_FEATURE = {
     "type": "Feature",
     "id": "afgooye_final_soil_map_utm38n.1",
-    "geometry": {"type": "Polygon", "coordinates": [[[45.07, 2.11], [45.08, 2.11], [45.08, 2.12], [45.07, 2.12], [45.07, 2.11]]]},
+    "geometry": {"type": "Polygon", "coordinates": [[[45.07, 2.11], [45.08, 2.11], [45.082, 2.116], [45.078, 2.122], [45.071, 2.121], [45.07, 2.11]]]},
     "properties": {
         "ogc_fid": 1, "area_ha": 159557.021652, "system": "Q", "subsystem": "Q31",
         "lu": "Q31_3", "lu_desc": "Levee embankment and fluvial terraces, irrigated cultivations",
@@ -102,11 +102,27 @@ def test_transform_strips_frame_features():
     assert swalim_soil.transform_swalim_feature(framed, "afgooye_soil") is None
 
 
+def test_transform_strips_bbox_geometry_and_non_polygons():
+    # Perfect axis-aligned 4-corner rectangle = spatial envelope / grid bound.
+    bbox_polygon = {
+        "type": "Feature",
+        "geometry": {"type": "Polygon", "coordinates": [[[40.9, -1.66], [51.45, -1.66], [51.45, 12.05], [40.9, 12.05], [40.9, -1.66]]]},
+        "properties": {**WFS_FEATURE["properties"]},
+    }
+    assert swalim_soil._is_bbox_geometry(bbox_polygon["geometry"]) is True
+    assert swalim_soil.transform_swalim_feature(bbox_polygon, "afgooye_soil") is None
+    # LineString / Point carriers are never rendered as thematic polygons.
+    line = {**WFS_FEATURE, "geometry": {"type": "LineString", "coordinates": [[45.07, 2.11], [45.08, 2.12]]}}
+    assert swalim_soil.transform_swalim_feature(line, "afgooye_soil") is None
+    # A genuine irregular thematic polygon is kept.
+    assert swalim_soil._is_bbox_geometry(WFS_FEATURE["geometry"]) is False
+
+
 # ── service: live merge, per-layer outage tolerance, cache, fallback ────────
 @respx.mock
 async def test_service_merges_wfs_and_tolerates_layer_outages():
     first = next(iter(swalim_soil.SOIL_PH_LAYERS.values()))
-    respx.get(url__eq=swalim_soil._wfs_url(first, 5000)).mock(
+    respx.get(url__eq=swalim_soil._wfs_url(first, 50000)).mock(
         return_value=httpx.Response(200, json={"type": "FeatureCollection", "features": [WFS_FEATURE, WFS_FRAME_FEATURE]})
     )
     _mock_all_wfs(status=500)  # every other candidate layer is down
@@ -114,10 +130,13 @@ async def test_service_merges_wfs_and_tolerates_layer_outages():
     async with httpx.AsyncClient() as client:
         data, source = await swalim_soil.get_swalim_soil_ph(client, SNAPSHOT)
         assert source == "official-wfs"
-        assert len(data["features"]) == 1
-        assert data["metadata"]["layers"] == {first: 1}
+        # national generalized base (7) + live WFS inset (1); base renders beneath
+        assert len(data["features"]) == 8
+        assert data["metadata"]["layers"] == {"national_base": 7, first: 1}
+        assert data["features"][0]["properties"]["source_layer"] == "national_base"
+        assert data["features"][-1]["properties"]["source_layer"] == first
         assert len(data["metadata"]["ph_classes"]) == 6
-        assert data["metadata"]["provenance_note"]
+        assert "National coverage" in data["metadata"]["provenance_note"]
         calls = respx.calls.call_count
         data2, source2 = await swalim_soil.get_swalim_soil_ph(client, SNAPSHOT)
         assert source2 == "cache" and data2 == data
@@ -158,7 +177,9 @@ def test_soil_ph_route_proxies_official_wfs():
     body = r.json()
     assert body["type"] == "FeatureCollection"
     assert body["metadata"]["wfs_endpoint"] == SWALIM_WFS
-    assert body["features"][0]["properties"]["PH_CLASS"] == "Neutral"
+    assert len(body["features"]) == 14  # 7 national base + 1 WFS inset per mocked catalogue layer
+    wfs_insets = [f for f in body["features"] if f["properties"]["source_layer"] != "national_base"]
+    assert wfs_insets[0]["properties"]["PH_CLASS"] == "Neutral"
 
 
 @respx.mock
@@ -168,7 +189,9 @@ def test_soil_ph_route_falls_back_and_supports_refresh():
     r = client.get("/api/v1/swalim/soil-ph")
     assert r.status_code == 200
     assert r.headers["X-SWALIM-Source"] == "static-fallback"
-    assert len(r.json()["features"]) == 7
+    body = r.json()
+    assert len(body["features"]) == 7
+    assert all(f["properties"]["source_layer"] == "national_base" for f in body["features"])
     # ?refresh=true bypasses the cache and re-queries the (still down) WFS
     r2 = client.get("/api/v1/swalim/soil-ph?refresh=true")
     assert r2.headers["X-SWALIM-Source"] == "static-fallback"

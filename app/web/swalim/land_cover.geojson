@@ -1,0 +1,86 @@
+{
+  "type": "FeatureCollection",
+  "name": "Somalia SWALIM-referenced land use / land cover (generalized)",
+  "metadata": {
+    "provenance": "Generalized screening layer following the FAO SWALIM Somalia land cover legend classes; cartographic reference only.",
+    "disclaimer": "Not the official SWALIM land cover product. Boundaries are generalized regions for categorized-symbology visualization; consult SWALIM publications for operational land cover data.",
+    "attributes": ["LAND_COVER"]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Rainfed Crop Fields", "REGION": "Bay & Bakool sorghum belt"},
+      "geometry": {"type": "Polygon", "coordinates": [[[42.9, 1.9], [44.6, 1.9], [44.6, 3.4], [43.4, 3.7], [42.9, 2.9], [42.9, 1.9]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Rainfed Crop Fields", "REGION": "Northwest Woqooyi Galbeed dryland farms"},
+      "geometry": {"type": "Polygon", "coordinates": [[[43.0, 9.2], [44.4, 9.2], [44.4, 10.1], [43.0, 10.1], [43.0, 9.2]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Irrigated Fields", "REGION": "Middle Shabelle riverine scheme"},
+      "geometry": {"type": "Polygon", "coordinates": [[[45.9, 2.4], [47.1, 2.6], [46.9, 3.6], [45.8, 3.3], [45.9, 2.4]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Irrigated Fields", "REGION": "Lower Juba banana belt"},
+      "geometry": {"type": "Polygon", "coordinates": [[[41.9, -0.6], [43.1, -0.4], [42.9, 0.5], [41.8, 0.3], [41.9, -0.6]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Grassland", "REGION": "Northwest highland grazing plains"},
+      "geometry": {"type": "Polygon", "coordinates": [[[43.3, 9.9], [45.0, 9.9], [45.2, 10.9], [43.3, 10.9], [43.3, 9.9]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Grassland", "REGION": "Haud peripheral rangelands"},
+      "geometry": {"type": "Polygon", "coordinates": [[[44.4, 4.4], [46.2, 4.4], [46.2, 5.6], [44.6, 5.8], [44.4, 4.4]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Shrubland", "REGION": "Central Somalia acacia-commiphora scrub"},
+      "geometry": {"type": "Polygon", "coordinates": [[[45.3, 5.8], [47.8, 5.8], [47.8, 7.6], [45.6, 7.4], [45.3, 5.8]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Woodland / Forest", "REGION": "Golis juniper escarpment woodland"},
+      "geometry": {"type": "Polygon", "coordinates": [[[45.4, 10.2], [46.6, 10.3], [46.4, 11.2], [45.2, 11.0], [45.4, 10.2]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Woodland / Forest", "REGION": "Lower Juba riparian forest and mangroves"},
+      "geometry": {"type": "Polygon", "coordinates": [[[41.4, -1.6], [42.4, -1.6], [42.6, -0.7], [41.5, -0.8], [41.4, -1.6]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Sparse Vegetation / Open Scrub", "REGION": "Haud open browse plains"},
+      "geometry": {"type": "Polygon", "coordinates": [[[44.0, 5.9], [45.3, 5.9], [45.3, 7.4], [44.0, 7.4], [44.0, 5.9]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Sparse Vegetation / Open Scrub", "REGION": "Sool plateau sparse rangeland"},
+      "geometry": {"type": "Polygon", "coordinates": [[[46.8, 8.4], [48.6, 8.4], [48.6, 10.0], [46.9, 9.9], [46.8, 8.4]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Bare Land / Dunes", "REGION": "Eastern Red Sea coastal desert"},
+      "geometry": {"type": "Polygon", "coordinates": [[[47.9, 10.4], [49.3, 10.4], [49.3, 11.7], [48.0, 11.6], [47.9, 10.4]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Bare Land / Dunes", "REGION": "Central coastal dune fields"},
+      "geometry": {"type": "Polygon", "coordinates": [[[47.9, 4.2], [50.6, 4.2], [50.9, 7.7], [48.4, 7.9], [47.9, 4.2]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Water Bodies", "REGION": "Shabelle river channel"},
+      "geometry": {"type": "Polygon", "coordinates": [[[44.6, 3.1], [45.0, 3.3], [45.4, 3.8], [45.35, 3.9], [44.95, 3.42], [44.55, 3.2], [44.6, 3.1]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"LAND_COVER": "Water Bodies", "REGION": "Juba river channel"},
+      "geometry": {"type": "Polygon", "coordinates": [[[41.0, -0.4], [41.9, 0.4], [42.4, 1.1], [42.5, 2.3], [42.9, 3.2], [42.75, 3.28], [42.35, 2.3], [41.95, 1.15], [41.45, 0.45], [40.9, -0.32], [41.0, -0.4]]]}
+    }
+  ]
+}

@@ -161,6 +161,8 @@ def create_app() -> FastAPI:
         "somalia_unified.geojson": "application/geo+json",
         "somalia_geology.geojson": "application/geo+json",
         "fao_soil_ph.geojson": "application/geo+json",
+        "soil_data.geojson": "application/geo+json",
+        "soil_style.json": "application/json",
     }
 
     @app.get("/{asset_name}", include_in_schema=False)

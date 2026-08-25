@@ -1183,7 +1183,7 @@ function App(){
   }
 
   const themeCls = (SPECTRUM.find(function(s){return s.id===spectrum;})||{}).cls || "bg-slate-950";
-  let geologySelection=null;try{geologySelection=JSON.parse(localStorage.getItem("gis_selected_geology")||"null");}catch(_){}
+  let geologySelection=null,phSample=null;try{geologySelection=JSON.parse(localStorage.getItem("gis_selected_geology")||"null");phSample=JSON.parse(localStorage.getItem("gis_fao_ph_sample")||"null");}catch(_){}
   const geologyPhInfluence=geologySelection?(String(geologySelection.lithology).toLowerCase().includes("limestone")?"Alkaline parent material; expect higher base saturation":String(geologySelection.lithology).toLowerCase().includes("sandstone")?"Low buffering parent material; verify acidity":"Parent material requires laboratory confirmation"):"";
 
   return e("div",{className:themeCls+" min-h-screen text-slate-100 transition-colors duration-500"},
@@ -1214,6 +1214,10 @@ function App(){
       e("div",{className:"uppercase tracking-widest text-sky-300 font-bold"},"GIS Geology Context"),
       e("div",{className:"mt-1 text-slate-300"},geologySelection.formation_name," | ",geologySelection.lithology," | ",geologySelection.era),
       e("div",{className:"mt-1 text-slate-400"},geologyPhInfluence)),
+    phSample && e("section",{className:"mx-3 sm:mx-4 mt-3 rounded-xl border border-emerald-800 bg-emerald-950/30 px-4 py-3 text-xs"},
+      e("div",{className:"uppercase tracking-widest text-emerald-300 font-bold"},"FAO Soil pH Sample"),
+      e("div",{className:"mt-1 text-slate-300"},"pH ",Number(phSample.ph).toFixed(1)," | ",phSample.reaction," | ",phSample.unit),
+      e("div",{className:"mt-1 text-slate-400"},Number(phSample.lat).toFixed(5),", ",Number(phSample.lng).toFixed(5))),
 
     /* ── LAYOUT ── */
     e("div",{className:"grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-3 sm:gap-4 p-3 sm:p-4"},

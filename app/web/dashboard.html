@@ -93,19 +93,21 @@
       <div class="text-[10px] text-slate-500 tracking-wide mt-0.5 hidden md:block">GIS  |  Global Flora DB  |  18-Region Soil Engine  |  Smart Simulation  |  Laboratory Analytics</div>
     </div>
   </div>
-  <nav class="module-toolbar rounded-lg p-1 flex gap-1 overflow-x-auto" aria-label="Portal modules">
-    <button class="module-button" data-module="lims">Lab LIMS</button>
-    <button class="module-button" data-module="drought">Drought Monitor</button>
-    <button class="module-button" data-module="fencing">Farm Fencing</button>
-    <button class="module-button" data-module="hydrology">Hydrology</button>
-    <button class="module-button" data-module="geology">Somali Geology</button>
-    <button class="module-button" data-module="soilph">FAO Soil pH</button>
-  </nav>
   <div class="flex-1"></div>
   <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span id="api-led" class="w-2 h-2 rounded-full bg-slate-600"></span><span id="api-text">API…</span></div>
   <button id="theme-btn" onclick="toggleTheme()" role="switch" aria-checked="true" aria-label="Switch to light mode" title="Toggle light / dark mode"
           class="module-button">Theme</button>
   <button onclick="toggleRight()" aria-label="Toggle database panel" class="module-button lg:hidden">Database</button>
+</header>
+
+<header id="portal-header" class="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] max-w-[calc(100vw-2rem)] bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-xl p-2 shadow-2xl">
+  <nav class="flex gap-1 overflow-x-auto" aria-label="Portal modules">
+    <button class="module-button text-xs font-semibold" data-module="lims">Lab LIMS</button>
+    <button class="module-button text-xs font-semibold" data-module="drought">Drought Monitor</button>
+    <button class="module-button text-xs font-semibold" data-module="fencing">Farm Fencing</button>
+    <button class="module-button text-xs font-semibold" data-module="geology">Somali Geology</button>
+    <button class="module-button text-xs font-semibold" data-module="soilph">FAO Soil pH</button>
+  </nav>
 </header>
 
 <div class="flex flex-1 min-h-0 relative">
@@ -202,12 +204,11 @@
     <div class="portal-map-shell">
       <div class="portal-map-stage"><div id="map" class="absolute inset-0"></div></div>
       <section id="portal-workspace" class="portal-workspace" hidden>
-    <aside class="module-drawer" data-drawer="lims" hidden><div class="module-title">Laboratory Information Management</div><p class="text-xs text-slate-400 mb-3">Geological parent material is synchronized with laboratory expectations.</p><div id="lims-geology-metrics"><div class="metric-row"><span>Parent material</span><b>No formation selected</b></div><div class="metric-row"><span>Expected pH influence</span><b>--</b></div></div><a class="module-button inline-block mt-3" href="/lims.html">Enter Full LIMS</a></aside>
+    <aside class="module-drawer" data-drawer="lims" hidden><div class="module-title">Laboratory Information Management</div><p class="text-xs text-slate-400 mb-3">Geological parent material is synchronized with laboratory expectations.</p><div id="lims-geology-metrics"><div class="metric-row"><span>Parent material</span><b>No formation selected</b></div><div class="metric-row"><span>Expected pH influence</span><b>--</b></div></div><div id="lims-ph-metrics" class="mt-3"><div class="metric-row"><span>FAO sampled pH</span><b>--</b></div><div class="metric-row"><span>Soil reaction</span><b>--</b></div></div><a class="module-button inline-block mt-3" href="/lims.html">Enter Full LIMS</a></aside>
     <aside class="module-drawer" data-drawer="drought" hidden><div class="module-title">SWALIM Drought Monitoring</div><div id="drought-geology-metrics"><div class="metric-row"><span>Regional vulnerability</span><b>Baseline</b></div><div class="metric-row"><span>Permeability</span><b>--</b></div><div class="metric-row"><span>Groundwater potential</span><b>--</b></div></div><p class="text-xs text-slate-400 mt-3">Selected geology dynamically adjusts infiltration and groundwater resilience context.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Full Drought Map</a></aside>
     <aside class="module-drawer" data-drawer="fencing" hidden><div class="module-title">Drawn Fencing Specifications</div><div class="flex flex-wrap gap-2 mb-3"><button class="module-button" data-spatial-draw="polygon">Farm Polygon</button><button class="module-button" data-spatial-draw="polyline">Fence Run</button><button class="module-button" data-spatial-draw="marker">Monitoring Post</button><button class="module-button" data-spatial-draw="clear">Clear</button></div><div id="fencing-specs"><div class="metric-row"><span>Features</span><b>0</b></div><div class="metric-row"><span>Total polygon area</span><b>0.00 ha | 0 m2</b></div><div class="metric-row"><span>Linear fence runs</span><b>0 m</b></div><div class="metric-row"><span>Monitoring posts</span><b>0</b></div></div><p class="text-xs text-slate-500 mt-3">Use the Leaflet drawing control on the map. Polygon, polyline and marker measurements update here immediately.</p></aside>
-    <aside class="module-drawer" data-drawer="hydrology" hidden><div class="module-title">Hydrology and Groundwater</div><div class="metric-row"><span>Aquifer screening</span><b>Available</b></div><div class="metric-row"><span>Well siting engine</span><b>VES + terrain MCE</b></div><p class="text-xs text-slate-400 mt-3">Review indicative groundwater zones, place hydrological boundary markers, and continue to the groundwater dashboard for aquifer and solar-pump tools.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Groundwater Tools</a></aside>
     <aside class="module-drawer" data-drawer="geology" hidden><div class="module-title">Somali Geology</div><div id="geology-status" class="text-xs text-slate-400">Loading geological formations...</div><div id="geology-properties" class="mt-3"><div class="metric-row"><span>Formation Name</span><b>Select a unit</b></div><div class="metric-row"><span>Lithology</span><b>--</b></div><div class="metric-row"><span>Stratigraphic Era</span><b>--</b></div></div></aside>
-    <aside class="module-drawer" data-drawer="soilph" hidden><div class="module-title">FAO Soil pH</div><div class="metric-row"><span>Dataset</span><b>FAO / IIASA HWSD v2</b></div><div class="metric-row"><span>Measurement</span><b>Topsoil pH</b></div><p class="text-xs text-slate-400 mt-3">Draw or select an area, then use Laboratory Analytics to sample the FAO soil baseline or apply measured field results.</p></aside>
+    <aside class="module-drawer" data-drawer="soilph" hidden><div class="module-title">FAO Soil pH</div><div class="metric-row"><span>Dataset</span><b>FAO / IIASA HWSD v2</b></div><div id="fao-ph-inspector"><div class="metric-row"><span>Coordinates</span><b>Click the map</b></div><div class="metric-row"><span>Soil pH</span><b>--</b></div><div class="metric-row"><span>Reaction</span><b>--</b></div></div><label class="block mt-3 text-xs uppercase tracking-wider text-slate-400">Layer opacity <output id="soil-opacity-value">50%</output><input id="soil-opacity" type="range" min="10" max="90" value="50" class="w-full mt-2"/></label><div class="mt-3 space-y-1 text-xs"><div><span class="inline-block w-3 h-3 mr-2" style="background:#be123c"></span>Strong Acidic, pH below 5.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#eab308"></span>Moderate Acidic, pH 5.5 to 6.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#059669"></span>Neutral, pH 6.5 to 7.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#0ea5e9"></span>Alkaline, pH 7.5 to 8.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#6b21a8"></span>Strong Alkaline, pH above 8.5</div></div><p class="text-xs text-slate-500 mt-3">Click within a mapped unit to inspect coordinates and synchronize the reading with Lab LIMS.</p></aside>
       </section>
     </div>
   </main>
@@ -487,6 +488,31 @@ async function loadGeology(){
  return geologyPromise;
 }
 setTimeout(loadGeology,0);
+
+/* ═══════════════ FAO SOIL pH SPATIAL INSPECTOR ═══════════════ */
+let soilPhLayer=null,soilPhData=null,soilPhMarker=null,soilPhOpacity=.5;
+function phClass(value){if(value<5.5)return{label:"Strong Acidic",color:"#be123c"};if(value<6.5)return{label:"Moderate Acidic",color:"#eab308"};if(value<=7.5)return{label:"Neutral",color:"#059669"};if(value<=8.5)return{label:"Alkaline",color:"#0ea5e9"};return{label:"Strong Alkaline",color:"#6b21a8"};}
+function pointInRing(lng,lat,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];if(((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/(yj-yi)+xi))inside=!inside;}return inside;}
+function featureAt(latlng){return soilPhData?.features.find(f=>{const g=f.geometry;if(g.type==="Polygon")return pointInRing(latlng.lng,latlng.lat,g.coordinates[0]);if(g.type==="MultiPolygon")return g.coordinates.some(p=>pointInRing(latlng.lng,latlng.lat,p[0]));return false;});}
+function publishPhSample(latlng,feature){
+ const value=Number(feature.properties.ph),reaction=phClass(value),sample={lat:latlng.lat,lng:latlng.lng,ph:value,reaction:reaction.label,unit:feature.properties.unit||"FAO soil unit"};
+ const coords=`${sample.lat.toFixed(5)}, ${sample.lng.toFixed(5)}`;
+ document.getElementById("fao-ph-inspector").innerHTML=`<div class="metric-row"><span>Coordinates</span><b>${coords}</b></div><div class="metric-row"><span>Soil pH</span><b>${value.toFixed(1)}</b></div><div class="metric-row"><span>Reaction</span><b style="color:${reaction.color}">${reaction.label}</b></div><div class="metric-row"><span>FAO unit</span><b>${sample.unit}</b></div>`;
+ document.getElementById("lims-ph-metrics").innerHTML=`<div class="metric-row"><span>FAO sampled pH</span><b>${value.toFixed(1)}</b></div><div class="metric-row"><span>Soil reaction</span><b style="color:${reaction.color}">${reaction.label}</b></div><div class="metric-row"><span>Coordinates</span><b>${coords}</b></div>`;
+ if(soilPhMarker)soilPhMarker.remove();soilPhMarker=L.circleMarker(latlng,{radius:7,color:"#f8fafc",weight:2,fillColor:reaction.color,fillOpacity:1}).addTo(map).bindPopup(`<b>FAO Soil pH ${value.toFixed(1)}</b><br>${reaction.label}<br>${sample.unit}<br>${coords}`).openPopup();
+ localStorage.setItem("gis_fao_ph_sample",JSON.stringify(sample));window.dispatchEvent(new CustomEvent("gis:fao-ph-sampled",{detail:sample}));
+}
+async function loadSoilPh(){
+ if(soilPhLayer)return soilPhLayer;
+ const response=await fetch("/fao_soil_ph.geojson");if(!response.ok)throw new Error("FAO Soil pH layer unavailable");soilPhData=await response.json();
+ soilPhLayer=L.geoJSON(soilPhData,{style:f=>({color:"#334155",weight:1,fillColor:phClass(Number(f.properties.ph)).color,fillOpacity:soilPhOpacity}),onEachFeature:(f,l)=>l.bindTooltip(`${f.properties.unit}: pH ${Number(f.properties.ph).toFixed(1)}`,{sticky:true})}).addTo(map);
+ L.control.layers(null,{"FAO Soil pH":soilPhLayer},{position:"bottomleft",collapsed:true}).addTo(map);
+ return soilPhLayer;
+}
+map.on("click",e=>{if(!soilPhLayer||!map.hasLayer(soilPhLayer))return;const feature=featureAt(e.latlng);if(feature)publishPhSample(e.latlng,feature);});
+const opacityInput=document.getElementById("soil-opacity");opacityInput.addEventListener("input",()=>{soilPhOpacity=Number(opacityInput.value)/100;document.getElementById("soil-opacity-value").textContent=`${opacityInput.value}%`;soilPhLayer?.setStyle({fillOpacity:soilPhOpacity});});
+loadSoilPh().catch(console.warn);
+try{const previous=JSON.parse(localStorage.getItem("gis_fao_ph_sample")||"null");if(previous){const cls=phClass(previous.ph);document.getElementById("lims-ph-metrics").innerHTML=`<div class="metric-row"><span>FAO sampled pH</span><b>${Number(previous.ph).toFixed(1)}</b></div><div class="metric-row"><span>Soil reaction</span><b style="color:${cls.color}">${previous.reaction}</b></div>`;}}catch{}
 
 /* ═══════════════════════════════════════════════════════════════════════
    SEED CATALOG — Somali Flora Field-Manual schema (verbatim):

@@ -4,7 +4,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -125,6 +125,12 @@ def create_app() -> FastAPI:
     async def lims() -> HTMLResponse:
         return HTMLResponse(lims_path.read_text(encoding="utf-8"))
 
+    dawaad_path = Path(__file__).resolve().parent / "web" / "dawaad.html"
+
+    @app.get("/dawaad", response_class=HTMLResponse, include_in_schema=False)
+    async def dawaad() -> HTMLResponse:
+        return HTMLResponse(dawaad_path.read_text(encoding="utf-8"))
+
     # Offline-safe libraries used by the laboratory dashboard. These root asset
     # routes also keep lims.html functional under the documented plain static server.
     web_dir = dashboard_path.parent
@@ -144,6 +150,22 @@ def create_app() -> FastAPI:
     @app.get("/lims.src.js", include_in_schema=False)
     async def lims_source_js() -> FileResponse:
         return FileResponse(web_dir / "lims.src.js", media_type="text/javascript")
+
+    abaar_assets = {
+        "dawaad-map.css": "text/css",
+        "dawaad-map.js": "text/javascript",
+        "pastoral-tools.js": "text/javascript",
+        "drought.mock.json": "application/json",
+        "dawaad.aquifers.geojson": "application/geo+json",
+        "somalia_unified.geojson": "application/geo+json",
+    }
+
+    @app.get("/{asset_name}", include_in_schema=False)
+    async def abaar_asset(asset_name: str) -> FileResponse:
+        media_type = abaar_assets.get(asset_name)
+        if media_type is None:
+            raise HTTPException(status_code=404)
+        return FileResponse(web_dir / asset_name, media_type=media_type)
 
     app.mount("/vendor", StaticFiles(directory=web_dir / "vendor"), name="vendor")
     app.mount("/web", StaticFiles(directory=web_dir), name="web")

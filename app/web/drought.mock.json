@@ -1,0 +1,496 @@
+{
+  "droughtMetrics": {
+    "sool": {
+      "region": "Sool",
+      "period": {
+        "dekad": "2026-08-D1",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-10",
+        "windowDays": 10
+      },
+      "stations": [
+        {
+          "id": "SOOL-LAS-01",
+          "name": "Laascaanood Climate Station",
+          "region": "Sool",
+          "lat": 8.4774,
+          "lng": 47.3597,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        },
+        {
+          "id": "SOOL-XUD-02",
+          "name": "Xudun Pastoral Gauge",
+          "region": "Sool",
+          "lat": 9.2132,
+          "lng": 47.1008,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        },
+        {
+          "id": "SOOL-TAL-03",
+          "name": "Taleex Rain Gauge",
+          "region": "Sool",
+          "lat": 9.1506,
+          "lng": 48.4178,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        }
+      ],
+      "rainfallRecords": [
+        {
+          "stationId": "SOOL-LAS-01",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 3.8,
+          "historicalMeanMm": 12.4,
+          "anomalyPct": -69.4
+        },
+        {
+          "stationId": "SOOL-XUD-02",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 1.6,
+          "historicalMeanMm": 9.8,
+          "anomalyPct": -83.7
+        },
+        {
+          "stationId": "SOOL-TAL-03",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 2.4,
+          "historicalMeanMm": 10.6,
+          "anomalyPct": -77.4
+        }
+      ],
+      "vegetationIndices": [
+        {
+          "regionId": "SOOL",
+          "vciScore": 22.6,
+          "status": "Alert"
+        }
+      ],
+      "precipitationProduct": "CHIRPS-compatible 10-day precipitation mock",
+      "vegetationProduct": "VCI/NDVI-compatible vegetation condition mock",
+      "dataMode": "mock",
+      "disclaimer": "Deterministic mock data for software integration and training; not a live or official CHIRPS, VCI, NDVI, or water-point observation."
+    },
+    "nugaal": {
+      "region": "Nugaal",
+      "period": {
+        "dekad": "2026-08-D1",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-10",
+        "windowDays": 10
+      },
+      "stations": [
+        {
+          "id": "NUG-GAR-01",
+          "name": "Garoowe Climate Station",
+          "region": "Nugaal",
+          "lat": 8.4054,
+          "lng": 48.4845,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        },
+        {
+          "id": "NUG-EYL-02",
+          "name": "Eyl Coastal Gauge",
+          "region": "Nugaal",
+          "lat": 7.9803,
+          "lng": 49.8164,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        }
+      ],
+      "rainfallRecords": [
+        {
+          "stationId": "NUG-GAR-01",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 5.4,
+          "historicalMeanMm": 10.2,
+          "anomalyPct": -47.1
+        },
+        {
+          "stationId": "NUG-EYL-02",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 7.1,
+          "historicalMeanMm": 11.5,
+          "anomalyPct": -38.3
+        }
+      ],
+      "vegetationIndices": [
+        {
+          "regionId": "NUGAAL",
+          "vciScore": 31.8,
+          "status": "Alert"
+        }
+      ],
+      "precipitationProduct": "CHIRPS-compatible 10-day precipitation mock",
+      "vegetationProduct": "VCI/NDVI-compatible vegetation condition mock",
+      "dataMode": "mock",
+      "disclaimer": "Deterministic mock data for software integration and training; not a live or official CHIRPS, VCI, NDVI, or water-point observation."
+    },
+    "sanaag": {
+      "region": "Sanaag",
+      "period": {
+        "dekad": "2026-08-D1",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-10",
+        "windowDays": 10
+      },
+      "stations": [
+        {
+          "id": "SAN-CEER-01",
+          "name": "Ceerigaabo Climate Station",
+          "region": "Sanaag",
+          "lat": 10.6162,
+          "lng": 47.3679,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        },
+        {
+          "id": "SAN-BADH-02",
+          "name": "Badhan Pastoral Gauge",
+          "region": "Sanaag",
+          "lat": 10.7138,
+          "lng": 48.3374,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        }
+      ],
+      "rainfallRecords": [
+        {
+          "stationId": "SAN-CEER-01",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 11.8,
+          "historicalMeanMm": 16.5,
+          "anomalyPct": -28.5
+        },
+        {
+          "stationId": "SAN-BADH-02",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 8.7,
+          "historicalMeanMm": 14.2,
+          "anomalyPct": -38.7
+        }
+      ],
+      "vegetationIndices": [
+        {
+          "regionId": "SANAAG",
+          "vciScore": 42.1,
+          "status": "Watch"
+        }
+      ],
+      "precipitationProduct": "CHIRPS-compatible 10-day precipitation mock",
+      "vegetationProduct": "VCI/NDVI-compatible vegetation condition mock",
+      "dataMode": "mock",
+      "disclaimer": "Deterministic mock data for software integration and training; not a live or official CHIRPS, VCI, NDVI, or water-point observation."
+    },
+    "togdheer": {
+      "region": "Togdheer",
+      "period": {
+        "dekad": "2026-08-D1",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-10",
+        "windowDays": 10
+      },
+      "stations": [
+        {
+          "id": "TOG-BUR-01",
+          "name": "Burco Climate Station",
+          "region": "Togdheer",
+          "lat": 9.5268,
+          "lng": 45.5346,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        },
+        {
+          "id": "TOG-OOD-02",
+          "name": "Oodweyne Rain Gauge",
+          "region": "Togdheer",
+          "lat": 9.4092,
+          "lng": 45.0645,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        }
+      ],
+      "rainfallRecords": [
+        {
+          "stationId": "TOG-BUR-01",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 2.9,
+          "historicalMeanMm": 11.1,
+          "anomalyPct": -73.9
+        },
+        {
+          "stationId": "TOG-OOD-02",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 1.7,
+          "historicalMeanMm": 9.4,
+          "anomalyPct": -81.9
+        }
+      ],
+      "vegetationIndices": [
+        {
+          "regionId": "TOGDHEER",
+          "vciScore": 18.4,
+          "status": "Severe"
+        }
+      ],
+      "precipitationProduct": "CHIRPS-compatible 10-day precipitation mock",
+      "vegetationProduct": "VCI/NDVI-compatible vegetation condition mock",
+      "dataMode": "mock",
+      "disclaimer": "Deterministic mock data for software integration and training; not a live or official CHIRPS, VCI, NDVI, or water-point observation."
+    },
+    "mudug": {
+      "region": "Mudug",
+      "period": {
+        "dekad": "2026-08-D1",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-10",
+        "windowDays": 10
+      },
+      "stations": [
+        {
+          "id": "MUD-GAL-01",
+          "name": "Gaalkacyo Climate Station",
+          "region": "Mudug",
+          "lat": 6.7697,
+          "lng": 47.4308,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        },
+        {
+          "id": "MUD-HOB-02",
+          "name": "Hobyo Coastal Gauge",
+          "region": "Mudug",
+          "lat": 5.3505,
+          "lng": 48.5268,
+          "lastUpdated": "2026-08-11T06:00:00Z"
+        }
+      ],
+      "rainfallRecords": [
+        {
+          "stationId": "MUD-GAL-01",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 6.2,
+          "historicalMeanMm": 8.8,
+          "anomalyPct": -29.5
+        },
+        {
+          "stationId": "MUD-HOB-02",
+          "dekad": "2026-08-D1",
+          "rainfallMm": 9.5,
+          "historicalMeanMm": 12.7,
+          "anomalyPct": -25.2
+        }
+      ],
+      "vegetationIndices": [
+        {
+          "regionId": "MUDUG",
+          "vciScore": 37.2,
+          "status": "Watch"
+        }
+      ],
+      "precipitationProduct": "CHIRPS-compatible 10-day precipitation mock",
+      "vegetationProduct": "VCI/NDVI-compatible vegetation condition mock",
+      "dataMode": "mock",
+      "disclaimer": "Deterministic mock data for software integration and training; not a live or official CHIRPS, VCI, NDVI, or water-point observation."
+    }
+  },
+  "waterPoints": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": "WP-SOOL-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            47.3524,
+            8.4821
+          ]
+        },
+        "properties": {
+          "id": "WP-SOOL-001",
+          "name": "Laascaanood Strategic Borehole",
+          "type": "Borehole",
+          "status": "Functional",
+          "depthMeters": 124.0,
+          "lat": 8.4821,
+          "lng": 47.3524
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-SOOL-002",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            46.5537,
+            8.9538
+          ]
+        },
+        "properties": {
+          "id": "WP-SOOL-002",
+          "name": "Caynabo Community Berkad",
+          "type": "Berkad",
+          "status": "Stressed",
+          "depthMeters": 4.5,
+          "lat": 8.9538,
+          "lng": 46.5537
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-SOOL-003",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            47.1072,
+            9.2075
+          ]
+        },
+        "properties": {
+          "id": "WP-SOOL-003",
+          "name": "Xudun Shallow Well",
+          "type": "Shallow Well",
+          "status": "Dry",
+          "depthMeters": 18.0,
+          "lat": 9.2075,
+          "lng": 47.1072
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-NUG-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            48.4971,
+            8.4012
+          ]
+        },
+        "properties": {
+          "id": "WP-NUG-001",
+          "name": "Garoowe Eastern Borehole",
+          "type": "Borehole",
+          "status": "Functional",
+          "depthMeters": 146.0,
+          "lat": 8.4012,
+          "lng": 48.4971
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-NUG-002",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            49.8052,
+            7.9894
+          ]
+        },
+        "properties": {
+          "id": "WP-NUG-002",
+          "name": "Eyl Plateau Berkad",
+          "type": "Berkad",
+          "status": "Stressed",
+          "depthMeters": 5.2,
+          "lat": 7.9894,
+          "lng": 49.8052
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-SAN-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            47.3561,
+            10.6128
+          ]
+        },
+        "properties": {
+          "id": "WP-SAN-001",
+          "name": "Ceerigaabo Western Borehole",
+          "type": "Borehole",
+          "status": "Functional",
+          "depthMeters": 97.0,
+          "lat": 10.6128,
+          "lng": 47.3561
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-SAN-002",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            48.3298,
+            10.7191
+          ]
+        },
+        "properties": {
+          "id": "WP-SAN-002",
+          "name": "Badhan Shallow Well",
+          "type": "Shallow Well",
+          "status": "Stressed",
+          "depthMeters": 22.0,
+          "lat": 10.7191,
+          "lng": 48.3298
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-TOG-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            45.5482,
+            9.5129
+          ]
+        },
+        "properties": {
+          "id": "WP-TOG-001",
+          "name": "Burco South Shallow Well",
+          "type": "Shallow Well",
+          "status": "Stressed",
+          "depthMeters": 26.0,
+          "lat": 9.5129,
+          "lng": 45.5482
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-MUD-001",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            47.4231,
+            6.7812
+          ]
+        },
+        "properties": {
+          "id": "WP-MUD-001",
+          "name": "Gaalkacyo North Borehole",
+          "type": "Borehole",
+          "status": "Functional",
+          "depthMeters": 138.0,
+          "lat": 6.7812,
+          "lng": 47.4231
+        }
+      },
+      {
+        "type": "Feature",
+        "id": "WP-MUD-002",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            48.5214,
+            5.3562
+          ]
+        },
+        "properties": {
+          "id": "WP-MUD-002",
+          "name": "Hobyo Coastal Berkad",
+          "type": "Berkad",
+          "status": "Dry",
+          "depthMeters": 3.8,
+          "lat": 5.3562,
+          "lng": 48.5214
+        }
+      }
+    ],
+    "dataMode": "mock",
+    "disclaimer": "Deterministic mock data for software integration and training; not a live or official CHIRPS, VCI, NDVI, or water-point observation."
+  }
+}

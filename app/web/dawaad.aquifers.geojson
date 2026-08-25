@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "name": "Dawaad indicative pastoral aquifer screening zones",
+  "dataMode": "mock-screening",
+  "disclaimer": "Indicative software fixture only; verify with hydrogeological mapping, VES and test drilling.",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "AQ-SOOL-MEDIUM",
+      "properties": {
+        "name": "Sool Fractured Limestone Belt",
+        "potential": "Medium",
+        "typicalDepthM": "65–130",
+        "indicativeYieldM3h": "3–10",
+        "salinityRisk": "Moderate"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[46.25, 8.05], [47.92, 7.98], [48.25, 9.38], [46.62, 9.66], [46.25, 8.05]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AQ-NUGAAL-HIGH",
+      "properties": {
+        "name": "Nugaal Valley Alluvial Corridor",
+        "potential": "High Yield",
+        "typicalDepthM": "35–85",
+        "indicativeYieldM3h": "8–20",
+        "salinityRisk": "Low to moderate"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[47.48, 7.42], [49.08, 7.31], [49.28, 8.22], [48.18, 8.57], [47.48, 7.42]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AQ-DHAROR-HIGH",
+      "properties": {
+        "name": "Dharoor Sandstone Recharge Zone",
+        "potential": "High Yield",
+        "typicalDepthM": "45–95",
+        "indicativeYieldM3h": "6–16",
+        "salinityRisk": "Low"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[48.05, 9.35], [49.58, 9.18], [50.12, 10.25], [48.72, 10.62], [48.05, 9.35]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "AQ-EAST-DEEP-SALINE",
+      "properties": {
+        "name": "Eastern Coastal Deep Saline Zone",
+        "potential": "Deep Saline",
+        "typicalDepthM": "120–260",
+        "indicativeYieldM3h": "2–7",
+        "salinityRisk": "High"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[48.02, 5.78], [50.28, 5.48], [50.48, 7.58], [49.12, 8.16], [48.02, 5.78]]]
+      }
+    }
+  ]
+}

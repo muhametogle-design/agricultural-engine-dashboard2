@@ -67,6 +67,8 @@
   }
   .seal{transform:rotate(-8deg);opacity:.9}
   .module-toolbar{background:rgba(15,23,42,.90);border:1px solid #1e293b;backdrop-filter:blur(12px)}
+  @keyframes soilPulse{0%,100%{outline-color:rgba(56,189,248,.95)}50%{outline-color:rgba(56,189,248,.20)}}
+  .module-flash{outline:2px solid #38bdf8;outline-offset:2px;animation:soilPulse 1.6s ease}
   .module-button{padding:.55rem .8rem;border:1px solid #334155;border-radius:.55rem;color:#cbd5e1;background:rgba(15,23,42,.88);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:.18s ease}
   .module-button:hover,.module-button.active{border-color:#10b981;color:#6ee7b7;background:rgba(6,78,59,.72)}
   .portal-map-shell{display:flex;position:absolute;inset:0;min-width:0}
@@ -221,7 +223,7 @@
     <aside class="module-drawer" data-drawer="fencing" hidden><div class="module-title">Drawn Fencing Specifications</div><div class="flex flex-wrap gap-2 mb-3"><button class="module-button" data-spatial-draw="polygon">Farm Polygon</button><button class="module-button" data-spatial-draw="polyline">Fence Run</button><button class="module-button" data-spatial-draw="marker">Monitoring Post</button><button class="module-button" data-spatial-draw="clear">Clear</button></div><div id="fencing-specs"><div class="metric-row"><span>Features</span><b>0</b></div><div class="metric-row"><span>Total polygon area</span><b>0.00 ha | 0 m2</b></div><div class="metric-row"><span>Linear fence runs</span><b>0 m</b></div><div class="metric-row"><span>Monitoring posts</span><b>0</b></div></div><p class="text-xs text-slate-500 mt-3">Use the Leaflet drawing control on the map. Polygon, polyline and marker measurements update here immediately.</p></aside>
     <aside class="module-drawer" data-drawer="hydrology" hidden><div class="module-title">SWALIM Hydrology</div><div id="hydrology-swalim-metrics"><div class="metric-row"><span>Selected feature</span><b>None</b></div><div class="metric-row"><span>Water depth</span><b>--</b></div><div class="metric-row"><span>Salinity</span><b>--</b></div><div class="metric-row"><span>Basin</span><b>--</b></div></div><p class="text-xs text-slate-500 mt-3">Enable official SWALIM overlays from the top-right layer control, then select a feature.</p></aside>
     <aside class="module-drawer" data-drawer="geology" hidden><div class="module-title">Somali Geology</div><div id="geology-status" class="text-xs text-slate-400">Loading geological formations...</div><div id="geology-properties" class="mt-3"><div class="metric-row"><span>Formation Name</span><b>Select a unit</b></div><div class="metric-row"><span>Lithology</span><b>--</b></div><div class="metric-row"><span>Stratigraphic Era</span><b>--</b></div></div></aside>
-    <aside class="module-drawer" data-drawer="soilph" hidden><div class="module-title">FAO Soil pH</div><div class="metric-row"><span>Dataset</span><b>FAO / IIASA HWSD v2</b></div><div class="metric-row"><span>Layer access</span><b>Use the top-right Layer Control</b></div><div class="metric-row"><span>Feature interaction</span><b>Select mapped polygons</b></div><div id="fao-soil-metrics" class="mt-3"><div class="metric-row"><span>Soil unit</span><b>None selected</b></div><div class="metric-row"><span>pH reaction</span><b>--</b></div><div class="metric-row"><span>Organic matter</span><b>--</b></div><div class="metric-row"><span>Salinity / drainage</span><b>--</b></div></div><label class="block mt-3 text-xs uppercase tracking-wider text-slate-400">Layer opacity <output id="soil-opacity-value">85%</output><input id="soil-opacity" type="range" min="10" max="90" value="85" class="w-full mt-2"/></label><div class="mt-3 space-y-1 text-xs"><div><span class="inline-block w-3 h-3 mr-2" style="background:#B91C1C"></span>Extremely Acidic, pH below 4.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#EF4444"></span>Strongly Acidic, pH 4.5 to 5.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#F59E0B"></span>Moderately Acidic, pH 5.5 to 6.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#84CC16"></span>Neutral / Near Neutral, pH 6.5 to 7.2</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#10B981"></span>Slightly Alkaline, pH 7.2 to 7.8</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#06B6D4"></span>Moderately Alkaline, pH 7.8 to 8.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#6366F1"></span>Strongly Alkaline, pH 8.5 and above</div></div><p class="text-xs text-slate-500 mt-3">Embedded COLOR, HEX_COLOR or pH_COLOR properties take precedence over the numerical FAO fallback palette.</p></aside>
+    <aside class="module-drawer" data-drawer="soilph" hidden><div class="module-title">FAO Soil pH</div><div class="metric-row"><span>Dataset</span><b>FAO / IIASA HWSD v2</b></div><div class="metric-row"><span>Layer access</span><b>Use the top-right Layer Control</b></div><div class="metric-row"><span>Feature interaction</span><b id="soil-feature-status">Select mapped polygons</b></div><div id="fao-soil-metrics" class="mt-3"><div class="metric-row"><span>Soil unit</span><b>None selected</b></div><div class="metric-row"><span>pH reaction</span><b>--</b></div><div class="metric-row"><span>Organic matter</span><b>--</b></div><div class="metric-row"><span>Salinity / drainage</span><b>--</b></div></div><label class="block mt-3 text-xs uppercase tracking-wider text-slate-400">Layer opacity <output id="soil-opacity-value">85%</output><input id="soil-opacity" type="range" min="10" max="90" value="85" class="w-full mt-2"/></label><div class="mt-3"><span class="block text-xs uppercase tracking-wider text-slate-400 mb-2">Thematic classification</span><div class="grid grid-cols-2 gap-1.5"><button type="button" data-soil-mode="ph" class="px-2 py-1.5 rounded-lg border border-slate-700 text-[11px] text-slate-300 hover:border-emerald-500 transition-colors">pH reaction classes</button><button type="button" data-soil-mode="unit" class="px-2 py-1.5 rounded-lg border border-slate-700 text-[11px] text-slate-300 hover:border-emerald-500 transition-colors">FAO reference groups</button></div></div><div class="mt-3 space-y-1 text-xs"><div><span class="inline-block w-3 h-3 mr-2" style="background:#B91C1C"></span>Extremely Acidic, pH below 4.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#EF4444"></span>Strongly Acidic, pH 4.5 to 5.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#F59E0B"></span>Moderately Acidic, pH 5.5 to 6.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#84CC16"></span>Neutral / Near Neutral, pH 6.5 to 7.2</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#10B981"></span>Slightly Alkaline, pH 7.2 to 7.8</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#06B6D4"></span>Moderately Alkaline, pH 7.8 to 8.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#6366F1"></span>Strongly Alkaline, pH 8.5 and above</div></div><div class="mt-3 pt-3 border-t border-slate-800"><span class="block text-[10px] uppercase tracking-widest text-slate-400 mb-2">FAO soil units (reference groups)</span><div class="space-y-1 text-xs"><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#5B3A29"></span>Vertisols</div><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#3F8C78"></span>Fluvisols</div><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#D8B365"></span>Arenosols</div><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#C7A76C"></span>Calcisols</div><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#B8A7D9"></span>Gypsisols</div><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#8DD3C7"></span>Solonchaks</div><div><span class="inline-block w-3 h-3 mr-2 rounded-sm border border-slate-700" style="background:#80B1D3"></span>Cambisols</div></div></div><p class="text-xs text-slate-500 mt-3">Embedded COLOR, HEX_COLOR or pH_COLOR properties take precedence over the numerical FAO fallback palette; reference-group fills follow the soil_units mapping in soil_style.json.</p></aside>
       </section>
     </div>
   </main>
@@ -510,49 +512,84 @@ setTimeout(loadGeology,0);
 
 /* ═══════════════ FAO SOIL pH LAYER CONTROL OVERLAY ═══════════════ */
 let soilPhOpacity=.85,soilStyleConfig=null;
+let soilThemeMode=["ph","unit"].includes(localStorage.getItem("gis_soil_theme_mode"))?localStorage.getItem("gis_soil_theme_mode"):"ph";
+/* Offline mirrors of soil_style.json so classification + legend survive a failed style fetch. */
+const SOIL_FALLBACK_PH_CLASSES=[{label:"Extremely Acidic",min:null,max:4.5,color:"#B91C1C"},{label:"Strongly Acidic",min:4.5,max:5.5,color:"#EF4444"},{label:"Moderately Acidic",min:5.5,max:6.5,color:"#F59E0B"},{label:"Neutral / Near Neutral",min:6.5,max:7.2,color:"#84CC16"},{label:"Slightly Alkaline",min:7.2,max:7.8,color:"#10B981"},{label:"Moderately Alkaline",min:7.8,max:8.5,color:"#06B6D4"},{label:"Strongly Alkaline",min:8.5,max:null,color:"#6366F1"}];
+const SOIL_FALLBACK_UNITS={Vertisols:"#5B3A29",Fluvisols:"#3F8C78",Arenosols:"#D8B365",Calcisols:"#C7A76C",Gypsisols:"#B8A7D9",Solonchaks:"#8DD3C7",Cambisols:"#80B1D3"};
+const soilPhClasses=()=>soilStyleConfig?.ph_classes||SOIL_FALLBACK_PH_CLASSES;
+const soilUnitPalette=()=>soilStyleConfig?.soil_units||SOIL_FALLBACK_UNITS;
+function soilPhClassColor(phValue){return soilPhClasses().find(c=>(c.min==null||phValue>=c.min)&&(c.max==null||phValue<c.max))?.color||null;}
+/* Resolve the FAO reference-group fill (soil_units mapping): exact FAO_UNIT key first, then substring match on SOIL_TYPE. */
+function soilUnitColor(properties){
+ const palette=soilUnitPalette();
+ const candidates=[properties.FAO_UNIT,properties.SOIL_TYPE,properties.fao_unit,properties.soil_type,properties.unit].map(v=>String(v??"").toLowerCase());
+ for(const candidate of candidates)if(candidate&&palette[candidate])return palette[candidate];
+ for(const key of Object.keys(palette))if(candidates.some(c=>c&&c.includes(key.toLowerCase())))return palette[key];
+ return null;
+}
+function soilPhNameColor(phClassName){
+ if(!phClassName)return null;
+ if(phClassName.includes("extreme"))return "#B91C1C";
+ if(phClassName.includes("strong")&&phClassName.includes("acid"))return "#EF4444";
+ if(phClassName.includes("moderate")&&phClassName.includes("acid"))return "#F59E0B";
+ if(phClassName.includes("neutral"))return "#84CC16";
+ if(phClassName.includes("slight")&&phClassName.includes("alkal"))return "#10B981";
+ if(phClassName.includes("moderate")&&phClassName.includes("alkal"))return "#06B6D4";
+ if(phClassName.includes("alkal"))return "#6366F1";
+ return null;
+}
 function getFaoPhHighlightStyle(feature){
  const properties=feature.properties||{};
  const embedded=properties.COLOR||properties.HEX_COLOR||properties.pH_COLOR;
  const propertyColor=typeof embedded==="string"&&/^#[0-9a-f]{3,8}$/i.test(embedded.trim())?embedded.trim():null;
  const phValue=parseFloat(properties.pH??properties.ph??properties.PH_VALUE??7.0);
  const phClassName=String(properties.PH_CLASS||"").toLowerCase();
- let fillColor=propertyColor;
- if(!fillColor&&soilStyleConfig?.ph_classes){const match=soilStyleConfig.ph_classes.find(c=>(c.min==null||phValue>=c.min)&&(c.max==null||phValue<c.max));if(match)fillColor=match.color;}
- if(!fillColor&&phClassName){
-  if(phClassName.includes("extreme"))fillColor="#B91C1C";
-  else if(phClassName.includes("strong")&&phClassName.includes("acid"))fillColor="#EF4444";
-  else if(phClassName.includes("moderate")&&phClassName.includes("acid"))fillColor="#F59E0B";
-  else if(phClassName.includes("neutral"))fillColor="#84CC16";
-  else if(phClassName.includes("slight")&&phClassName.includes("alkal"))fillColor="#10B981";
-  else if(phClassName.includes("moderate")&&phClassName.includes("alkal"))fillColor="#06B6D4";
-  else if(phClassName.includes("alkal"))fillColor="#6366F1";
- }
- if(!fillColor){
-  if(phValue<4.5)fillColor="#B91C1C";
-  else if(phValue<5.5)fillColor="#EF4444";
-  else if(phValue<6.5)fillColor="#F59E0B";
-  else if(phValue<7.2)fillColor="#84CC16";
-  else if(phValue<7.8)fillColor="#10B981";
-  else if(phValue<8.5)fillColor="#06B6D4";
-  else fillColor="#6366F1";
- }
- return{fillColor,fillOpacity:soilPhOpacity,weight:.4,color:"#1E293B",opacity:.7};
+ /* unit mode: reference-group palette wins over the embedded pH hex so the two themes stay distinct. */
+ let fillColor=soilThemeMode==="unit"?soilUnitColor(properties):null;
+ fillColor=fillColor||propertyColor||soilPhClassColor(phValue)||soilPhNameColor(phClassName);
+ return{fillColor:fillColor||"#64748b",fillOpacity:soilPhOpacity,weight:soilStyleConfig?.polygon?.weight??.4,color:soilStyleConfig?.polygon?.color||"#1E293B",opacity:soilStyleConfig?.polygon?.opacity??.7};
 }
-function normalizeSoilProperties(raw){const p=raw||{};return{ph:p.pH_VALUE??p.pH??p.ph??p.PH_VALUE,phClass:p.PH_CLASS||"Not specified",soilType:p.SOIL_TYPE||p.FAO_UNIT||"Not specified",faoUnit:p.FAO_UNIT||p.SOIL_TYPE||"Not specified",organicMatter:p.ORGANIC_MATTER??"N/A",organicCarbon:p.ORGANIC_CARBON??"N/A",salinity:p.SALINITY_EC??"N/A",drainage:p.DRAINAGE_CLASS||"Not specified"};}
-function selectSoilFeature(feature,layer){const p=normalizeSoilProperties(feature.properties);soilPhLayer.eachLayer(item=>soilPhLayer.resetStyle(item));layer.setStyle({color:"#f8fafc",weight:2,opacity:1});layer.bringToFront();document.getElementById("fao-soil-metrics").innerHTML=`<div class="metric-row"><span>Soil unit</span><b>${safeSwalim(p.soilType)} / ${safeSwalim(p.faoUnit)}</b></div><div class="metric-row"><span>pH reaction</span><b>${safeSwalim(p.ph)} | ${safeSwalim(p.phClass)}</b></div><div class="metric-row"><span>Organic matter / carbon</span><b>${safeSwalim(p.organicMatter)}% / ${safeSwalim(p.organicCarbon)}%</b></div><div class="metric-row"><span>Salinity / drainage</span><b>${safeSwalim(p.salinity)} dS/m | ${safeSwalim(p.drainage)}</b></div>`;document.getElementById("lims-soil-metrics").innerHTML=`<div class="metric-row"><span>Soil dataset</span><b>${safeSwalim(p.soilType)}</b></div><div class="metric-row"><span>pH / organic matter</span><b>${safeSwalim(p.ph)} / ${safeSwalim(p.organicMatter)}%</b></div><div class="metric-row"><span>Salinity / drainage</span><b>${safeSwalim(p.salinity)} dS/m / ${safeSwalim(p.drainage)}</b></div>`;localStorage.setItem("gis_selected_soil",JSON.stringify(p));}
-const soilPhLayer=L.geoJSON(null,{filter:feature=>{const p=feature.properties||{},kind=String(p.feature_type||p.TYPE||p.kind||"").toLowerCase();return !p.is_frame&&!p.extent_outline&&!kind.includes("extent")&&!kind.includes("frame");},style:getFaoPhHighlightStyle,onEachFeature:(feature,layer)=>{const p=normalizeSoilProperties(feature.properties);layer.bindPopup(`<b>${safeSwalim(p.soilType)}</b><br>FAO unit: ${safeSwalim(p.faoUnit)}<br>pH: ${safeSwalim(p.ph)} (${safeSwalim(p.phClass)})<br>Organic matter: ${safeSwalim(p.organicMatter)}%<br>Organic carbon: ${safeSwalim(p.organicCarbon)}%<br>Salinity EC: ${safeSwalim(p.salinity)} dS/m<br>Drainage: ${safeSwalim(p.drainage)}`);layer.on("click",()=>selectSoilFeature(feature,layer));}});
+function setSoilThemeMode(mode){
+ if(!["ph","unit"].includes(mode)||mode===soilThemeMode)return;
+ soilThemeMode=mode;localStorage.setItem("gis_soil_theme_mode",mode);
+ soilPhLayer.setStyle(getFaoPhHighlightStyle);
+ renderSoilLegend();syncSoilThemeModeButtons();
+}
+function syncSoilThemeModeButtons(){document.querySelectorAll("[data-soil-mode]").forEach(button=>{const on=button.dataset.soilMode===soilThemeMode;button.classList.toggle("border-emerald-500",on);button.classList.toggle("bg-emerald-900/60",on);button.classList.toggle("text-emerald-200",on);button.classList.toggle("border-slate-700",!on);});}
+function flashModuleButton(name){const button=document.querySelector(`.module-button[data-module="${name}"]`);if(!button)return;button.classList.add("module-flash");setTimeout(()=>button.classList.remove("module-flash"),1700);}
+function normalizeSoilProperties(raw){const p=raw||{};return{unit:p.unit||p.UNIT||p.name||p.NAME||"Unnamed soil polygon",ph:p.pH_VALUE??p.pH??p.ph??p.PH_VALUE,phClass:p.PH_CLASS||p.pH_CLASS||"Not specified",soilType:p.SOIL_TYPE||p.FAO_UNIT||"Not specified",faoUnit:p.FAO_UNIT||p.SOIL_TYPE||"Not specified",organicMatter:p.ORGANIC_MATTER??p.organic_matter??"N/A",organicCarbon:p.ORGANIC_CARBON??p.organic_carbon??"N/A",salinity:p.SALINITY_EC??p.salinity_ec??"N/A",drainage:p.DRAINAGE_CLASS||p.drainage_class||"Not specified"};}
+function selectSoilFeature(feature,layer){const p=normalizeSoilProperties(feature.properties);soilPhLayer.eachLayer(item=>soilPhLayer.resetStyle(item));layer.setStyle({color:"#f8fafc",weight:2,opacity:1});layer.bringToFront();const unitColor=soilUnitColor(feature.properties)||soilPhClassColor(parseFloat(p.ph))||"#64748b";document.getElementById("fao-soil-metrics").innerHTML=`<div class="metric-row"><span>Soil unit</span><b>${safeSwalim(p.unit)}</b></div><div class="metric-row"><span>FAO reference group</span><b><span class="inline-block w-2.5 h-2.5 mr-1.5 rounded-sm border border-slate-600 align-middle" style="background:${unitColor}"></span>${safeSwalim(p.soilType)} / ${safeSwalim(p.faoUnit)}</b></div><div class="metric-row"><span>pH reaction</span><b>${safeSwalim(p.ph)} | ${safeSwalim(p.phClass)}</b></div><div class="metric-row"><span>Organic matter / carbon</span><b>${safeSwalim(p.organicMatter)}% / ${safeSwalim(p.organicCarbon)}%</b></div><div class="metric-row"><span>Salinity / drainage</span><b>${safeSwalim(p.salinity)} dS/m | ${safeSwalim(p.drainage)}</b></div>`;document.getElementById("lims-soil-metrics").innerHTML=`<div class="metric-row"><span>Soil dataset</span><b>${safeSwalim(p.unit)} — ${safeSwalim(p.soilType)}</b></div><div class="metric-row"><span>pH / organic matter</span><b>${safeSwalim(p.ph)} / ${safeSwalim(p.organicMatter)}%</b></div><div class="metric-row"><span>Salinity / drainage</span><b>${safeSwalim(p.salinity)} dS/m / ${safeSwalim(p.drainage)}</b></div>`;localStorage.setItem("gis_selected_soil",JSON.stringify(p));window.dispatchEvent(new CustomEvent("gis:soil-selected",{detail:p}));}
+const soilPhLayer=L.geoJSON(null,{/* Strip rectangular tile bounding boxes, layer frame boundaries and extent outlines before render. */
+ filter:feature=>{const p=feature.properties||{},kind=String(p.feature_type||p.TYPE||p.kind||p.role||p.layer_role||"").toLowerCase();return !p.is_frame&&!p.extent_outline&&!p.is_bbox&&!p.layer_frame&&!p.tile_boundary&&!kind.includes("extent")&&!kind.includes("frame")&&!kind.includes("bbox")&&!kind.includes("tile");},
+ style:getFaoPhHighlightStyle,
+ onEachFeature:(feature,layer)=>{const p=normalizeSoilProperties(feature.properties);layer.bindPopup(`<b>${safeSwalim(p.unit)}</b><br>FAO unit: ${safeSwalim(p.soilType)} (${safeSwalim(p.faoUnit)})<br>pH: ${safeSwalim(p.ph)} (${safeSwalim(p.phClass)})<br>Organic matter: ${safeSwalim(p.organicMatter)}%<br>Organic carbon: ${safeSwalim(p.organicCarbon)}%<br>Salinity EC: ${safeSwalim(p.salinity)} dS/m<br>Drainage: ${safeSwalim(p.drainage)}`);layer.on("click",()=>{selectSoilFeature(feature,layer);flashModuleButton("soilph");});}});
 mapLayerControl.addOverlay(soilPhLayer,"FAO Soil pH Layer");
 const soilLegend=L.control({position:"bottomright"});
 soilLegend.onAdd=()=>{const node=L.DomUtil.create("div","module-toolbar rounded-lg p-3 text-xs text-slate-200");node.id="soil-map-legend";node.style.display="none";L.DomEvent.disableClickPropagation(node);return node;};soilLegend.addTo(map);
-function renderSoilLegend(){const node=document.getElementById("soil-map-legend"),classes=soilStyleConfig?.ph_classes||[];node.innerHTML=`<div class="text-[10px] uppercase tracking-widest font-bold text-emerald-300 mb-2">FAO Soil Reaction</div>${classes.map(c=>`<div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 border border-slate-700" style="background:${c.color}"></span><span>${safeSwalim(c.label)}</span><span class="ml-auto font-mono text-slate-400">${c.min==null?"< "+c.max:c.max==null?"≥ "+c.min:c.min+"–"+c.max}</span></div>`).join("")}`;}
+function renderSoilLegend(){
+ const node=document.getElementById("soil-map-legend");if(!node)return;
+ const chip=(mode,label)=>`<button type="button" data-soil-legend-mode="${mode}" class="cursor-pointer px-2 py-0.5 rounded border text-[10px] font-semibold tracking-wide ${soilThemeMode===mode?"border-emerald-500 bg-emerald-900/60 text-emerald-200":"border-slate-700 text-slate-400 hover:border-slate-500"}">${label}</button>`;
+ const phRows=soilPhClasses().map(c=>`<div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 rounded-sm border border-slate-700" style="background:${c.color}"></span><span>${safeSwalim(c.label)}</span><span class="ml-auto font-mono text-slate-400">${c.min==null?"&lt; "+c.max:c.max==null?"≥ "+c.min:c.min+"–"+c.max}</span></div>`).join("");
+ const unitRows=Object.entries(soilUnitPalette()).map(([unit,color])=>`<div class="flex items-center gap-2 mb-1"><span class="w-3 h-3 rounded-sm border border-slate-700" style="background:${color}"></span><span>${safeSwalim(unit)}</span></div>`).join("");
+ node.innerHTML=`<div class="text-[10px] uppercase tracking-widest font-bold text-emerald-300 mb-1.5">${safeSwalim(soilStyleConfig?.name)||"FAO soil reaction and reference-group style"}</div><div class="flex gap-1 mb-2">${chip("ph","pH reaction")}${chip("unit","FAO reference group")}</div>${soilThemeMode==="ph"?phRows:unitRows}<div class="mt-2 pt-2 border-t border-slate-800 text-[10px] text-slate-500">FAO / IIASA HWSD v2 · generalized screening layer</div>`;
+ node.querySelectorAll("[data-soil-legend-mode]").forEach(button=>L.DomEvent.on(button,"click",event=>{L.DomEvent.stop(event);setSoilThemeMode(button.dataset.soilLegendMode);}));
+}
 map.on("overlayadd overlayremove",event=>{if(event.layer===soilPhLayer)document.getElementById("soil-map-legend").style.display=map.hasLayer(soilPhLayer)?"block":"none";});
 async function loadSoilPh(){
- try{const styleResponse=await fetch("/soil_style.json");if(styleResponse.ok)soilStyleConfig=await styleResponse.json();}catch(error){console.warn("Soil style configuration unavailable:",error);}
- const sources=["/static/data/soil_data.geojson","/soil_data.geojson","/static/data/fao_ph.geojson","/fao_soil_ph.geojson","https://raw.githubusercontent.com/muhametogle-design/agricultural-engine-dashboard2/main/app/web/soil_data.geojson"];
+ const styleSources=["/soil_style.json","/static/data/soil_style.json","/web/soil_style.json","https://raw.githubusercontent.com/muhametogle-design/agricultural-engine-dashboard2/main/app/web/soil_style.json"];
+ for(const url of styleSources){try{const styleResponse=await fetch(url);if(styleResponse.ok){soilStyleConfig=await styleResponse.json();break;}}catch(error){console.warn("Soil style configuration unavailable:",url,error);}}
+ const sources=["/static/data/soil_data.geojson","/soil_data.geojson","/web/soil_data.geojson","/static/data/fao_ph.geojson","/fao_soil_ph.geojson","https://raw.githubusercontent.com/muhametogle-design/agricultural-engine-dashboard2/main/app/web/soil_data.geojson"];
  let data,lastError;for(const url of sources){try{const response=await fetch(url);if(response.ok){data=await response.json();break;}lastError=new Error(`HTTP ${response.status} from ${url}`);}catch(error){lastError=error;}}
- if(!data)throw lastError||new Error("FAO soil GeoJSON source unavailable");soilPhLayer.addData(data);renderSoilLegend();return soilPhLayer;
+ if(!data)throw lastError||new Error("FAO soil GeoJSON source unavailable");
+ soilPhLayer.addData(data);
+ const status=document.getElementById("soil-feature-status");if(status)status.textContent=`${soilPhLayer.getLayers().length} mapped soil polygons`;
+ renderSoilLegend();syncSoilThemeModeButtons();
+ try{const saved=JSON.parse(localStorage.getItem("gis_selected_soil")||"null");if(saved){const match=soilPhLayer.getLayers().find(layer=>{const q=normalizeSoilProperties(layer.feature?.properties||{});return q.unit===saved.unit||q.soilType===saved.soilType;});if(match)selectSoilFeature(match.feature,match);}}catch{}
+ return soilPhLayer;
 }
 const opacityInput=document.getElementById("soil-opacity");opacityInput.addEventListener("input",()=>{soilPhOpacity=Number(opacityInput.value)/100;document.getElementById("soil-opacity-value").textContent=`${opacityInput.value}%`;soilPhLayer.setStyle({fillOpacity:soilPhOpacity});});
+document.querySelectorAll("[data-soil-mode]").forEach(button=>button.addEventListener("click",()=>setSoilThemeMode(button.dataset.soilMode)));
+syncSoilThemeModeButtons();
 loadSoilPh().catch(error=>console.warn("FAO GeoJSON source unavailable:",error));
 
 /* ═══════════════ OFFICIAL FAO SWALIM WATER & LAND RESOURCES ═══════════════ */

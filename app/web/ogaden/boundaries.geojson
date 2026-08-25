@@ -1,0 +1,1137 @@
+{
+ "type": "FeatureCollection",
+ "name": "Ogaden Somali Region \u2014 Admin 2 zones & Admin 3 woredas (bundled snapshot)",
+ "metadata": {
+  "provenance": "Generalized bundled snapshot: zone and woreda names verified; geometry simplified for cartographic screening.",
+  "sources": {
+   "live": "geoBoundaries gbOpen ETH/ADM2",
+   "woredas": "bundled verified snapshot"
+  }
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin2_zone",
+    "ADMIN_LEVEL": 2,
+    "ZONE_NAME": "Jigjiga Zone",
+    "ZONE_ID": "ETH-SR-Jigjiga"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.109,
+       9.55
+      ],
+      [
+       43.744,
+       10.096
+      ],
+      [
+       42.84,
+       10.221
+      ],
+      [
+       42.119,
+       9.85
+      ],
+      [
+       42.149,
+       9.26
+      ],
+      [
+       42.845,
+       8.895
+      ],
+      [
+       43.709,
+       9.032
+      ],
+      [
+       44.109,
+       9.55
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin2_zone",
+    "ADMIN_LEVEL": 2,
+    "ZONE_NAME": "Korahe Zone",
+    "ZONE_ID": "ETH-SR-Korahe"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       46.592,
+       7.925
+      ],
+      [
+       46.012,
+       8.706
+      ],
+      [
+       44.767,
+       8.923
+      ],
+      [
+       43.766,
+       8.364
+      ],
+      [
+       43.79,
+       7.494
+      ],
+      [
+       44.767,
+       6.927
+      ],
+      [
+       46.024,
+       7.133
+      ],
+      [
+       46.592,
+       7.925
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin2_zone",
+    "ADMIN_LEVEL": 2,
+    "ZONE_NAME": "Gode Zone",
+    "ZONE_ID": "ETH-SR-Gode"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       45.93,
+       5.65
+      ],
+      [
+       45.286,
+       6.444
+      ],
+      [
+       43.805,
+       6.66
+      ],
+      [
+       42.636,
+       6.089
+      ],
+      [
+       42.657,
+       5.217
+      ],
+      [
+       43.8,
+       4.627
+      ],
+      [
+       45.268,
+       4.869
+      ],
+      [
+       45.93,
+       5.65
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin2_zone",
+    "ADMIN_LEVEL": 2,
+    "ZONE_NAME": "Doollo Zone",
+    "ZONE_ID": "ETH-SR-Doollo"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       48.141,
+       6.15
+      ],
+      [
+       47.655,
+       7.107
+      ],
+      [
+       46.491,
+       7.357
+      ],
+      [
+       45.611,
+       6.661
+      ],
+      [
+       45.564,
+       5.619
+      ],
+      [
+       46.49,
+       4.938
+      ],
+      [
+       47.668,
+       5.178
+      ],
+      [
+       48.141,
+       6.15
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin2_zone",
+    "ADMIN_LEVEL": 2,
+    "ZONE_NAME": "Shabelle Zone",
+    "ZONE_ID": "ETH-SR-Shabelle"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       41.639,
+       6.7
+      ],
+      [
+       41.221,
+       7.378
+      ],
+      [
+       40.246,
+       7.535
+      ],
+      [
+       39.466,
+       7.073
+      ],
+      [
+       39.454,
+       6.322
+      ],
+      [
+       40.249,
+       5.874
+      ],
+      [
+       41.231,
+       6.012
+      ],
+      [
+       41.639,
+       6.7
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin2_zone",
+    "ADMIN_LEVEL": 2,
+    "ZONE_NAME": "Siti Zone",
+    "ZONE_ID": "ETH-SR-Siti"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.567,
+       10.125
+      ],
+      [
+       44.192,
+       10.701
+      ],
+      [
+       43.386,
+       10.853
+      ],
+      [
+       42.746,
+       10.444
+      ],
+      [
+       42.73,
+       9.8
+      ],
+      [
+       43.387,
+       9.401
+      ],
+      [
+       44.222,
+       9.521
+      ],
+      [
+       44.567,
+       10.125
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Jijiga",
+    "ZONE_NAME": "Jigjiga Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       43.539,
+       9.5
+      ],
+      [
+       43.293,
+       9.794
+      ],
+      [
+       42.802,
+       9.801
+      ],
+      [
+       42.562,
+       9.5
+      ],
+      [
+       42.803,
+       9.2
+      ],
+      [
+       43.293,
+       9.205
+      ],
+      [
+       43.539,
+       9.5
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Awbare",
+    "ZONE_NAME": "Jigjiga Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       42.971,
+       9.775
+      ],
+      [
+       42.767,
+       10.088
+      ],
+      [
+       42.333,
+       10.088
+      ],
+      [
+       42.109,
+       9.775
+      ],
+      [
+       42.331,
+       9.459
+      ],
+      [
+       42.754,
+       9.481
+      ],
+      [
+       42.971,
+       9.775
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Kebri Beyah",
+    "ZONE_NAME": "Jigjiga Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       43.572,
+       9.125
+      ],
+      [
+       43.375,
+       9.267
+      ],
+      [
+       42.966,
+       9.274
+      ],
+      [
+       42.781,
+       9.125
+      ],
+      [
+       42.966,
+       8.976
+      ],
+      [
+       43.379,
+       8.979
+      ],
+      [
+       43.572,
+       9.125
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Gursum",
+    "ZONE_NAME": "Jigjiga Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       43.058,
+       9.125
+      ],
+      [
+       42.874,
+       9.307
+      ],
+      [
+       42.474,
+       9.309
+      ],
+      [
+       42.279,
+       9.125
+      ],
+      [
+       42.48,
+       8.947
+      ],
+      [
+       42.871,
+       8.945
+      ],
+      [
+       43.058,
+       9.125
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Harshin",
+    "ZONE_NAME": "Jigjiga Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.038,
+       9.9
+      ],
+      [
+       43.787,
+       10.159
+      ],
+      [
+       43.271,
+       10.152
+      ],
+      [
+       43.014,
+       9.9
+      ],
+      [
+       43.268,
+       9.646
+      ],
+      [
+       43.763,
+       9.665
+      ],
+      [
+       44.038,
+       9.9
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Kebri Dehar",
+    "ZONE_NAME": "Korahe Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       45.547,
+       7.9
+      ],
+      [
+       45.291,
+       8.319
+      ],
+      [
+       44.72,
+       8.305
+      ],
+      [
+       44.424,
+       7.9
+      ],
+      [
+       44.727,
+       7.507
+      ],
+      [
+       45.286,
+       7.487
+      ],
+      [
+       45.547,
+       7.9
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Shilabo",
+    "ZONE_NAME": "Korahe Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       45.984,
+       7.05
+      ],
+      [
+       45.693,
+       7.43
+      ],
+      [
+       45.117,
+       7.418
+      ],
+      [
+       44.816,
+       7.05
+      ],
+      [
+       45.118,
+       6.683
+      ],
+      [
+       45.673,
+       6.695
+      ],
+      [
+       45.984,
+       7.05
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Sheygosh",
+    "ZONE_NAME": "Korahe Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.583,
+       7.7
+      ],
+      [
+       44.383,
+       8.124
+      ],
+      [
+       43.984,
+       8.09
+      ],
+      [
+       43.772,
+       7.7
+      ],
+      [
+       43.964,
+       7.271
+      ],
+      [
+       44.386,
+       7.269
+      ],
+      [
+       44.583,
+       7.7
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Camuudi",
+    "ZONE_NAME": "Korahe Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       46.294,
+       8.325
+      ],
+      [
+       46.008,
+       8.67
+      ],
+      [
+       45.497,
+       8.664
+      ],
+      [
+       45.223,
+       8.325
+      ],
+      [
+       45.477,
+       7.959
+      ],
+      [
+       46.015,
+       7.971
+      ],
+      [
+       46.294,
+       8.325
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Gode",
+    "ZONE_NAME": "Gode Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.145,
+       6.05
+      ],
+      [
+       43.91,
+       6.419
+      ],
+      [
+       43.402,
+       6.402
+      ],
+      [
+       43.147,
+       6.05
+      ],
+      [
+       43.375,
+       5.661
+      ],
+      [
+       43.905,
+       5.688
+      ],
+      [
+       44.145,
+       6.05
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Kalafo",
+    "ZONE_NAME": "Gode Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.369,
+       5.7
+      ],
+      [
+       44.163,
+       6.028
+      ],
+      [
+       43.731,
+       6.037
+      ],
+      [
+       43.529,
+       5.7
+      ],
+      [
+       43.728,
+       5.357
+      ],
+      [
+       44.165,
+       5.369
+      ],
+      [
+       44.369,
+       5.7
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Mustahil",
+    "ZONE_NAME": "Gode Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.58,
+       5.25
+      ],
+      [
+       44.354,
+       5.485
+      ],
+      [
+       43.945,
+       5.487
+      ],
+      [
+       43.712,
+       5.25
+      ],
+      [
+       43.936,
+       5.003
+      ],
+      [
+       44.371,
+       4.995
+      ],
+      [
+       44.58,
+       5.25
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Ferfer",
+    "ZONE_NAME": "Gode Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       45.066,
+       4.95
+      ],
+      [
+       44.896,
+       5.148
+      ],
+      [
+       44.543,
+       5.16
+      ],
+      [
+       44.374,
+       4.95
+      ],
+      [
+       44.549,
+       4.747
+      ],
+      [
+       44.91,
+       4.737
+      ],
+      [
+       45.066,
+       4.95
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Adadle",
+    "ZONE_NAME": "Gode Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       43.56,
+       5.1
+      ],
+      [
+       43.323,
+       5.387
+      ],
+      [
+       42.833,
+       5.38
+      ],
+      [
+       42.578,
+       5.1
+      ],
+      [
+       42.813,
+       4.797
+      ],
+      [
+       43.329,
+       4.807
+      ],
+      [
+       43.56,
+       5.1
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Warder",
+    "ZONE_NAME": "Doollo Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       46.799,
+       6.775
+      ],
+      [
+       46.472,
+       7.148
+      ],
+      [
+       45.926,
+       7.15
+      ],
+      [
+       45.65,
+       6.775
+      ],
+      [
+       45.909,
+       6.376
+      ],
+      [
+       46.498,
+       6.366
+      ],
+      [
+       46.799,
+       6.775
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Geladi",
+    "ZONE_NAME": "Doollo Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       47.147,
+       7.025
+      ],
+      [
+       46.872,
+       7.28
+      ],
+      [
+       46.303,
+       7.304
+      ],
+      [
+       46.029,
+       7.025
+      ],
+      [
+       46.302,
+       6.745
+      ],
+      [
+       46.877,
+       6.765
+      ],
+      [
+       47.147,
+       7.025
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Bokh",
+    "ZONE_NAME": "Doollo Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       46.958,
+       6.125
+      ],
+      [
+       46.721,
+       6.446
+      ],
+      [
+       46.188,
+       6.434
+      ],
+      [
+       45.93,
+       6.125
+      ],
+      [
+       46.182,
+       5.809
+      ],
+      [
+       46.701,
+       5.829
+      ],
+      [
+       46.958,
+       6.125
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Danot",
+    "ZONE_NAME": "Doollo Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       47.575,
+       5.575
+      ],
+      [
+       47.294,
+       5.935
+      ],
+      [
+       46.716,
+       5.923
+      ],
+      [
+       46.444,
+       5.575
+      ],
+      [
+       46.706,
+       5.214
+      ],
+      [
+       47.291,
+       5.218
+      ],
+      [
+       47.575,
+       5.575
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_admin3_woreda",
+    "ADMIN_LEVEL": 3,
+    "WOREDA_NAME": "Lehel-Yucub",
+    "ZONE_NAME": "Doollo Zone"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       46.453,
+       5.35
+      ],
+      [
+       46.247,
+       5.633
+      ],
+      [
+       45.798,
+       5.64
+      ],
+      [
+       45.575,
+       5.35
+      ],
+      [
+       45.79,
+       5.051
+      ],
+      [
+       46.257,
+       5.054
+      ],
+      [
+       46.453,
+       5.35
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,229 @@
+{
+ "type": "FeatureCollection",
+ "name": "Upstream Jubba & Shabelle river networks and basin extents (bundled snapshot)",
+ "metadata": {
+  "provenance": "Generalized upstream river network: Ganale Dorya + Dawa form the Jubba at Doolow; Webi Shabelle rises in the Bale highlands. Geometry simplified; no open live WFS endpoint publishes these cross-border reaches."
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_river",
+    "RIVER_NAME": "Webi Shabelle (upper Shabelle)",
+    "BASIN_NAME": "Shabelle",
+    "REACH": "upstream"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      39.62,
+      7.02
+     ],
+     [
+      40.48,
+      7.38
+     ],
+     [
+      41.52,
+      7.05
+     ],
+     [
+      42.3,
+      6.42
+     ],
+     [
+      43.02,
+      5.92
+     ],
+     [
+      43.52,
+      5.62
+     ],
+     [
+      43.95,
+      5.32
+     ],
+     [
+      44.6,
+      4.98
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_river",
+    "RIVER_NAME": "Ganale Dorya (upper Jubba)",
+    "BASIN_NAME": "Jubba",
+    "REACH": "upstream"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      38.95,
+      6.9
+     ],
+     [
+      40.2,
+      6.42
+     ],
+     [
+      41.3,
+      5.82
+     ],
+     [
+      42.2,
+      5.05
+     ],
+     [
+      42.78,
+      4.15
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_river",
+    "RIVER_NAME": "Dawa",
+    "BASIN_NAME": "Jubba",
+    "REACH": "upstream"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      41.05,
+      5.2
+     ],
+     [
+      41.82,
+      4.62
+     ],
+     [
+      42.4,
+      4.18
+     ],
+     [
+      42.78,
+      4.15
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_basin",
+    "BASIN_NAME": "Webi Shabelle upstream basin",
+    "AREA_KM2": 76000
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.823,
+       6.4
+      ],
+      [
+       44.13,
+       7.319
+      ],
+      [
+       42.536,
+       7.85
+      ],
+      [
+       40.65,
+       7.676
+      ],
+      [
+       39.387,
+       6.91
+      ],
+      [
+       39.507,
+       5.913
+      ],
+      [
+       40.651,
+       5.125
+      ],
+      [
+       42.509,
+       5.03
+      ],
+      [
+       44.083,
+       5.502
+      ],
+      [
+       44.823,
+       6.4
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_basin",
+    "BASIN_NAME": "Ganale\u2013Dawa (Jubba) upstream basin",
+    "AREA_KM2": 128000
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       42.888,
+       5.5
+      ],
+      [
+       42.378,
+       6.509
+      ],
+      [
+       41.145,
+       6.991
+      ],
+      [
+       39.768,
+       6.862
+      ],
+      [
+       38.848,
+       6.041
+      ],
+      [
+       38.974,
+       4.994
+      ],
+      [
+       39.798,
+       4.178
+      ],
+      [
+       41.151,
+       3.984
+      ],
+      [
+       42.308,
+       4.536
+      ],
+      [
+       42.888,
+       5.5
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

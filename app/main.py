@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import __version__
 from app.api.deps import get_settings
-from app.api.routes import analysis, auth, clients, environmental, fields, health, lab, plans, swalim, ves
+from app.api.routes import analysis, auth, clients, environmental, fields, health, lab, ogaden, plans, swalim, ves
 from app.core.errors import AppError
 from app.core.logging import configure_logging, get_logger
 from app.db.pool import close_pool, create_pool
@@ -27,7 +27,12 @@ async def lifespan(app: FastAPI):
     configure_logging()
     settings = get_settings()
     app.state.settings = settings
-    app.state.pool = await create_pool(settings.database_dsn)
+    try:
+        app.state.pool = await create_pool(settings.database_dsn)
+    except Exception as exc:  # DB-optional startup: the GIS portal / proxies must
+        # still serve via `uvicorn main:app` when Postgres is unreachable.
+        app.state.pool = None
+        log.warning("Postgres pool unavailable (%s); DB-backed endpoints degraded, spatial portal fully operational", exc)
     app.state.http_client = create_async_client(settings.http)
     app.state.terrain = build_terrain_provider(settings.dem_path)
     app.state.hwsd = HWSDService(settings.hwsd_raster, settings.hwsd_attrs)
@@ -35,7 +40,8 @@ async def lifespan(app: FastAPI):
              type(app.state.terrain).__name__, app.state.hwsd.available)
     yield
     await app.state.http_client.aclose()
-    await close_pool(app.state.pool)
+    if app.state.pool is not None:
+        await close_pool(app.state.pool)
 
 
 LANDING_HTML = """<!DOCTYPE html>
@@ -93,7 +99,8 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     api_prefix = "/api/v1"
     for r in (auth.router, clients.router, fields.router, environmental.router,
-              ves.router, analysis.router, plans.router, lab.router, swalim.router):
+              ves.router, analysis.router, plans.router, lab.router, swalim.router,
+              ogaden.router):
         app.include_router(r, prefix=api_prefix)
 
     @app.get("/api")
@@ -173,6 +180,9 @@ def create_app() -> FastAPI:
         return FileResponse(web_dir / asset_name, media_type=media_type)
 
     app.mount("/vendor", StaticFiles(directory=web_dir / "vendor"), name="vendor")
+    # Server-side spatial payload cache (proxied GeoJSON drops land here).
+    (web_dir / "static" / "data" / "cache").mkdir(parents=True, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=web_dir / "static"), name="static")
     app.mount("/web", StaticFiles(directory=web_dir), name="web")
 
     return app

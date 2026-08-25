@@ -1,0 +1,393 @@
+{
+ "type": "FeatureCollection",
+ "name": "Ogaden / cross-border land cover & soil categories (bundled snapshot)",
+ "metadata": {
+  "provenance": "Generalized cross-border land cover and soil categorization consistent with the SWALIM land cover legend; screening layer for the portal."
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Rainfed Crop Fields",
+    "REGION": "Jijiga\u2013Babile highland belt",
+    "SOIL_TYPE": "Vertisols (black cotton)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       43.769,
+       9.35
+      ],
+      [
+       43.551,
+       9.775
+      ],
+      [
+       43.006,
+       9.883
+      ],
+      [
+       42.58,
+       9.582
+      ],
+      [
+       42.579,
+       9.117
+      ],
+      [
+       43.009,
+       8.829
+      ],
+      [
+       43.538,
+       8.939
+      ],
+      [
+       43.769,
+       9.35
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Irrigated Fields",
+    "REGION": "Shabelle riverine \u2014 Gode / Kalafo schemes",
+    "SOIL_TYPE": "Fluvisols (alluvial riverbed)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.371,
+       5.8
+      ],
+      [
+       44.1,
+       6.131
+      ],
+      [
+       43.515,
+       6.236
+      ],
+      [
+       43.038,
+       5.991
+      ],
+      [
+       43.035,
+       5.609
+      ],
+      [
+       43.522,
+       5.384
+      ],
+      [
+       44.12,
+       5.453
+      ],
+      [
+       44.371,
+       5.8
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Grassland",
+    "REGION": "Bale fringe grazing",
+    "SOIL_TYPE": "Regosols / Leptosols (shallow rock)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       41.093,
+       7.2
+      ],
+      [
+       40.844,
+       7.656
+      ],
+      [
+       40.309,
+       7.77
+      ],
+      [
+       39.874,
+       7.456
+      ],
+      [
+       39.873,
+       6.944
+      ],
+      [
+       40.313,
+       6.647
+      ],
+      [
+       40.844,
+       6.743
+      ],
+      [
+       41.093,
+       7.2
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Shrubland",
+    "REGION": "Central Ogaden acacia\u2013commiphora",
+    "SOIL_TYPE": "Calcisols / Gypsisols (calcareous)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       45.351,
+       7.55
+      ],
+      [
+       45.023,
+       8.268
+      ],
+      [
+       44.239,
+       8.473
+      ],
+      [
+       43.645,
+       7.937
+      ],
+      [
+       43.637,
+       7.158
+      ],
+      [
+       44.251,
+       6.678
+      ],
+      [
+       45.009,
+       6.849
+      ],
+      [
+       45.351,
+       7.55
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Woodland / Forest",
+    "REGION": "Southern Doollo open woodland",
+    "SOIL_TYPE": "Regosols (shallow rock)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       47.341,
+       5.3
+      ],
+      [
+       46.96,
+       5.842
+      ],
+      [
+       46.002,
+       5.963
+      ],
+      [
+       45.227,
+       5.6
+      ],
+      [
+       45.239,
+       5.004
+      ],
+      [
+       45.995,
+       4.62
+      ],
+      [
+       46.951,
+       4.765
+      ],
+      [
+       47.341,
+       5.3
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Sparse Vegetation / Open Scrub",
+    "REGION": "Northern Korahe browse plains",
+    "SOIL_TYPE": "Calcisols / Gypsisols (calcareous)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       46.25,
+       8.625
+      ],
+      [
+       45.972,
+       9.106
+      ],
+      [
+       45.27,
+       9.206
+      ],
+      [
+       44.705,
+       8.889
+      ],
+      [
+       44.704,
+       8.361
+      ],
+      [
+       45.272,
+       8.051
+      ],
+      [
+       45.948,
+       8.166
+      ],
+      [
+       46.25,
+       8.625
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Bare Land / Dunes",
+    "REGION": "Eastern harsh plains",
+    "SOIL_TYPE": "Arenosols (sandy dune)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       48.122,
+       6.475
+      ],
+      [
+       47.817,
+       7.13
+      ],
+      [
+       47.143,
+       7.32
+      ],
+      [
+       46.595,
+       6.848
+      ],
+      [
+       46.625,
+       6.117
+      ],
+      [
+       47.148,
+       5.652
+      ],
+      [
+       47.823,
+       5.813
+      ],
+      [
+       48.122,
+       6.475
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "feature_type": "ogaden_landcover",
+    "LAND_COVER": "Water Bodies",
+    "REGION": "Shabelle channel \u2014 Kalafo to Mustahil",
+    "SOIL_TYPE": "Fluvisols (alluvial riverbed)"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       44.28,
+       5.5
+      ],
+      [
+       44.13,
+       5.812
+      ],
+      [
+       43.753,
+       5.876
+      ],
+      [
+       43.457,
+       5.668
+      ],
+      [
+       43.465,
+       5.335
+      ],
+      [
+       43.751,
+       5.114
+      ],
+      [
+       44.114,
+       5.205
+      ],
+      [
+       44.28,
+       5.5
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

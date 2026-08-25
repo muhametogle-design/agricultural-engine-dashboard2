@@ -163,6 +163,10 @@ def create_app() -> FastAPI:
         "fao_soil_ph.geojson": "application/geo+json",
     }
 
+    @app.get("/swalim/somalia_land_use.png", include_in_schema=False)
+    async def swalim_land_use_raster() -> FileResponse:
+        return FileResponse(web_dir / "swalim" / "somalia_land_use.png", media_type="image/png")
+
     @app.get("/{asset_name}", include_in_schema=False)
     async def abaar_asset(asset_name: str) -> FileResponse:
         media_type = abaar_assets.get(asset_name)

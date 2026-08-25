@@ -105,6 +105,7 @@
     <button class="module-button text-xs font-semibold" data-module="lims">Lab LIMS</button>
     <button class="module-button text-xs font-semibold" data-module="drought">Drought Monitor</button>
     <button class="module-button text-xs font-semibold" data-module="fencing">Farm Fencing</button>
+    <button class="module-button text-xs font-semibold" data-module="hydrology">Hydrology</button>
     <button class="module-button text-xs font-semibold" data-module="geology">Somali Geology</button>
     <button class="module-button text-xs font-semibold" data-module="soilph">FAO Soil pH</button>
   </nav>
@@ -204,9 +205,10 @@
     <div class="portal-map-shell">
       <div class="portal-map-stage"><div id="map" class="absolute inset-0"></div></div>
       <section id="portal-workspace" class="portal-workspace" hidden>
-    <aside class="module-drawer" data-drawer="lims" hidden><div class="module-title">Laboratory Information Management</div><p class="text-xs text-slate-400 mb-3">Geological parent material is synchronized with laboratory expectations.</p><div id="lims-geology-metrics"><div class="metric-row"><span>Parent material</span><b>No formation selected</b></div><div class="metric-row"><span>Expected pH influence</span><b>--</b></div></div><a class="module-button inline-block mt-3" href="/lims.html">Enter Full LIMS</a></aside>
-    <aside class="module-drawer" data-drawer="drought" hidden><div class="module-title">SWALIM Drought Monitoring</div><div id="drought-geology-metrics"><div class="metric-row"><span>Regional vulnerability</span><b>Baseline</b></div><div class="metric-row"><span>Permeability</span><b>--</b></div><div class="metric-row"><span>Groundwater potential</span><b>--</b></div></div><p class="text-xs text-slate-400 mt-3">Selected geology dynamically adjusts infiltration and groundwater resilience context.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Full Drought Map</a></aside>
+    <aside class="module-drawer" data-drawer="lims" hidden><div class="module-title">Laboratory Information Management</div><p class="text-xs text-slate-400 mb-3">Geological parent material is synchronized with laboratory expectations.</p><div id="lims-geology-metrics"><div class="metric-row"><span>Parent material</span><b>No formation selected</b></div><div class="metric-row"><span>Expected pH influence</span><b>--</b></div></div><div id="lims-swalim-metrics" class="mt-3"><div class="metric-row"><span>SWALIM feature</span><b>None selected</b></div><div class="metric-row"><span>Water / erosion context</span><b>--</b></div></div><a class="module-button inline-block mt-3" href="/lims.html">Enter Full LIMS</a></aside>
+    <aside class="module-drawer" data-drawer="drought" hidden><div class="module-title">SWALIM Drought Monitoring</div><div id="drought-geology-metrics"><div class="metric-row"><span>Regional vulnerability</span><b>Baseline</b></div><div class="metric-row"><span>Permeability</span><b>--</b></div><div class="metric-row"><span>Groundwater potential</span><b>--</b></div></div><div id="drought-swalim-metrics" class="mt-3"><div class="metric-row"><span>SWALIM basin</span><b>None selected</b></div><div class="metric-row"><span>Land condition</span><b>--</b></div></div><p class="text-xs text-slate-400 mt-3">Selected geology dynamically adjusts infiltration and groundwater resilience context.</p><a class="module-button inline-block mt-3" href="/dawaad.html">Open Full Drought Map</a></aside>
     <aside class="module-drawer" data-drawer="fencing" hidden><div class="module-title">Drawn Fencing Specifications</div><div class="flex flex-wrap gap-2 mb-3"><button class="module-button" data-spatial-draw="polygon">Farm Polygon</button><button class="module-button" data-spatial-draw="polyline">Fence Run</button><button class="module-button" data-spatial-draw="marker">Monitoring Post</button><button class="module-button" data-spatial-draw="clear">Clear</button></div><div id="fencing-specs"><div class="metric-row"><span>Features</span><b>0</b></div><div class="metric-row"><span>Total polygon area</span><b>0.00 ha | 0 m2</b></div><div class="metric-row"><span>Linear fence runs</span><b>0 m</b></div><div class="metric-row"><span>Monitoring posts</span><b>0</b></div></div><p class="text-xs text-slate-500 mt-3">Use the Leaflet drawing control on the map. Polygon, polyline and marker measurements update here immediately.</p></aside>
+    <aside class="module-drawer" data-drawer="hydrology" hidden><div class="module-title">SWALIM Hydrology</div><div id="hydrology-swalim-metrics"><div class="metric-row"><span>Selected feature</span><b>None</b></div><div class="metric-row"><span>Water depth</span><b>--</b></div><div class="metric-row"><span>Salinity</span><b>--</b></div><div class="metric-row"><span>Basin</span><b>--</b></div></div><p class="text-xs text-slate-500 mt-3">Enable official SWALIM overlays from the top-right layer control, then select a feature.</p></aside>
     <aside class="module-drawer" data-drawer="geology" hidden><div class="module-title">Somali Geology</div><div id="geology-status" class="text-xs text-slate-400">Loading geological formations...</div><div id="geology-properties" class="mt-3"><div class="metric-row"><span>Formation Name</span><b>Select a unit</b></div><div class="metric-row"><span>Lithology</span><b>--</b></div><div class="metric-row"><span>Stratigraphic Era</span><b>--</b></div></div></aside>
     <aside class="module-drawer" data-drawer="soilph" hidden><div class="module-title">FAO Soil pH</div><div class="metric-row"><span>Dataset</span><b>FAO / IIASA HWSD v2</b></div><div class="metric-row"><span>Layer access</span><b>Use the top-right Layer Control</b></div><div class="metric-row"><span>Feature interaction</span><b>Select mapped polygons</b></div><label class="block mt-3 text-xs uppercase tracking-wider text-slate-400">Layer opacity <output id="soil-opacity-value">50%</output><input id="soil-opacity" type="range" min="10" max="90" value="50" class="w-full mt-2"/></label><div class="mt-3 space-y-1 text-xs"><div><span class="inline-block w-3 h-3 mr-2" style="background:#be123c"></span>Strong Acidic, pH below 5.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#eab308"></span>Moderate Acidic, pH 5.5 to 6.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#059669"></span>Neutral, pH 6.5 to 7.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#0ea5e9"></span>Alkaline, pH 7.5 to 8.5</div><div><span class="inline-block w-3 h-3 mr-2" style="background:#6b21a8"></span>Strong Alkaline, pH above 8.5</div></div><p class="text-xs text-slate-500 mt-3">Click within a mapped unit to inspect coordinates and synchronize the reading with Lab LIMS.</p></aside>
       </section>
@@ -506,6 +508,41 @@ async function loadSoilPh(){
 }
 const opacityInput=document.getElementById("soil-opacity");opacityInput.addEventListener("input",()=>{soilPhOpacity=Number(opacityInput.value)/100;document.getElementById("soil-opacity-value").textContent=`${opacityInput.value}%`;soilPhLayer.setStyle({fillOpacity:soilPhOpacity});});
 loadSoilPh().catch(error=>console.warn("FAO GeoJSON source unavailable:",error));
+
+/* ═══════════════ OFFICIAL FAO SWALIM WATER & LAND RESOURCES ═══════════════ */
+const swalimLayers={river_basins:L.layerGroup(),hydrology:L.layerGroup(),water_points:L.layerGroup(),land_degradation:L.layerGroup(),flood_risk:L.layerGroup()};
+const swalimLabels={river_basins:"SWALIM Water & Land Resources | River Basins",hydrology:"SWALIM Water & Land Resources | Rivers & Hydrology",water_points:"SWALIM Water & Land Resources | Water Points",land_degradation:"SWALIM Water & Land Resources | Land Degradation",flood_risk:"SWALIM Water & Land Resources | Flood Risk"};
+Object.entries(swalimLayers).forEach(([name,layer])=>mapLayerControl.addOverlay(layer,swalimLabels[name]));
+function safeSwalim(value){return String(value??"--").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function swalimSeverityColor(value){const v=String(value||"").toLowerCase();return v.includes("severe")?"#be123c":v.includes("moderate")?"#d97706":"#d6b84c";}
+function inspectSwalim(properties,layerName){
+ const p={point_name:properties.point_name||properties.NAME||properties.name||"--",water_depth_m:properties.water_depth_m??properties.DEPTH??"--",salinity_status:properties.salinity_status||properties.SALINITY||"--",erosion_type:properties.erosion_type||properties.Deg_Type_1||properties.Deg_Condit||"--",basin_name:properties.basin_name||properties.BASIN_NAME||properties.BASIN||"--"};
+ const featureName=p.point_name!=="--"?p.point_name:p.basin_name!=="--"?p.basin_name:layerName.replaceAll("_"," ");
+ document.getElementById("hydrology-swalim-metrics").innerHTML=`<div class="metric-row"><span>Selected feature</span><b>${safeSwalim(featureName)}</b></div><div class="metric-row"><span>Water depth</span><b>${safeSwalim(p.water_depth_m)} m</b></div><div class="metric-row"><span>Salinity</span><b>${safeSwalim(p.salinity_status)}</b></div><div class="metric-row"><span>Basin</span><b>${safeSwalim(p.basin_name)}</b></div>`;
+ document.getElementById("lims-swalim-metrics").innerHTML=`<div class="metric-row"><span>SWALIM feature</span><b>${safeSwalim(featureName)}</b></div><div class="metric-row"><span>Water / erosion context</span><b>${safeSwalim(p.salinity_status!=="--"?p.salinity_status:p.erosion_type)}</b></div>`;
+ document.getElementById("drought-swalim-metrics").innerHTML=`<div class="metric-row"><span>SWALIM basin</span><b>${safeSwalim(p.basin_name)}</b></div><div class="metric-row"><span>Land condition</span><b>${safeSwalim(p.erosion_type)}</b></div>`;
+ localStorage.setItem("gis_selected_swalim",JSON.stringify({...p,layer_name:layerName}));window.dispatchEvent(new CustomEvent("gis:swalim-selected",{detail:{...p,layer_name:layerName}}));
+}
+function swalimFeatureLayer(layerName,feature,latlng){
+ const p=feature.properties||{};
+ if(layerName==="water_points")return L.circleMarker(latlng,{radius:6,color:"#e0f2fe",weight:1.5,fillColor:"#06b6d4",fillOpacity:.9});
+ return L.marker(latlng);
+}
+function swalimStyle(layerName,feature){
+ if(layerName==="river_basins")return{color:"#2563eb",weight:1.5,fillColor:"#60a5fa",fillOpacity:.12};
+ if(layerName==="hydrology")return{color:"#0ea5e9",weight:2.5,fillOpacity:0};
+ if(layerName==="flood_risk")return{color:"#2563eb",weight:1,fillColor:"#3b82f6",fillOpacity:.45};
+ if(layerName==="land_degradation"){const severity=feature.properties?.severity||feature.properties?.Deg_Condit;return{color:"#78350f",weight:1,fillColor:swalimSeverityColor(severity),fillOpacity:.5};}
+ return{color:"#64748b",weight:1,fillOpacity:.2};
+}
+async function loadSwalimLayer(layerName){
+ const sources=[`/api/v1/swalim/${layerName}`,`/swalim/${layerName}.geojson`];let data,lastError;
+ for(const url of sources){try{const response=await fetch(url);if(response.ok){data=await response.json();break;}lastError=new Error(`HTTP ${response.status}`);}catch(error){lastError=error;}}
+ if(!data)throw lastError||new Error(`${layerName} unavailable`);
+ const rendered=L.geoJSON(data,{style:f=>swalimStyle(layerName,f),pointToLayer:(f,ll)=>swalimFeatureLayer(layerName,f,ll),onEachFeature:(feature,layer)=>{const p=feature.properties||{};layer.bindPopup(`<b>${safeSwalim(p.point_name||p.basin_name||p.river_name||p.erosion_type||layerName.replaceAll("_"," "))}</b><br>Water depth: ${safeSwalim(p.water_depth_m)} m<br>Salinity: ${safeSwalim(p.salinity_status)}<br>Erosion: ${safeSwalim(p.erosion_type||p.severity)}<br>Basin: ${safeSwalim(p.basin_name)}`);layer.on("click",()=>inspectSwalim(p,layerName));}});
+ rendered.eachLayer(layer=>swalimLayers[layerName].addLayer(layer));return rendered;
+}
+Object.keys(swalimLayers).forEach(name=>loadSwalimLayer(name).catch(error=>console.warn(`SWALIM ${name} unavailable:`,error)));
 
 /* ═══════════════════════════════════════════════════════════════════════
    SEED CATALOG — Somali Flora Field-Manual schema (verbatim):

@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 from app.services import ogaden
 from app.services.disk_cache import cache_path
-from app.services.ogaden import GEOBOUNDARIES_ETH_ADM2
+from app.services.ogaden import GEOBOUNDARIES_ETH_ADM2, SWALIM_LANDUSE_WFS
 
 WEB_DIR = Path(__file__).resolve().parents[1] / "app" / "web"
 
@@ -53,8 +53,7 @@ async def test_boundaries_live_geoboundaries_filtered_and_cached():
     woredas = [f for f in data["features"] if f["properties"]["ADMIN_LEVEL"] == 3]
     assert {z["properties"]["ZONE_NAME"] for z in zones} == {"Jigjiga", "Korahe", "Gode", "Doollo"}
     assert not any(z["properties"]["ZONE_NAME"] == "Oromia" for z in zones)  # non-Somali zone filtered
-    assert woredas and all("WOREDA_NAME" in w["properties"] for w in woredas)
-    assert {"Jijiga", "Warder", "Kalafo"} <= {w["properties"]["WOREDA_NAME"] for w in woredas}
+    assert woredas == []  # woredas are NEVER synthesized: official ADM3 vectors only, served live
     assert cache_path("ogaden_boundaries").exists() or (ogaden.CACHE_DIR / "ogaden_boundaries.json").exists()
     # second call served from cache without hitting the network
     async with httpx.AsyncClient() as client:
@@ -68,23 +67,47 @@ async def test_boundaries_fall_back_when_live_unavailable():
     async with httpx.AsyncClient() as client:
         data, source = await ogaden.get_ogaden_boundaries(client, WEB_DIR)
     assert source == "bundled-snapshot"
-    zones = {f["properties"]["ZONE_NAME"] for f in data["features"] if f["properties"]["ADMIN_LEVEL"] == 2}
-    assert {"Jigjiga Zone", "Korahe Zone", "Gode Zone", "Doollo Zone"} <= zones
-    assert any(f["properties"].get("WOREDA_NAME") == "Gode" for f in data["features"])
+    feats = data["features"]
+    zones = {f["properties"]["ZONE_NAME"] for f in feats if f["properties"]["ADMIN_LEVEL"] == 2}
+    # real GADM 4.1 Somali-Region zones (official vector boundaries)
+    assert {"Korahe", "Shabelle", "Faafan (Jigjiga)", "Doollo (Wardheer)", "Afder", "Liben"} <= zones
+    assert len(zones) >= 9
+    assert not any(f["properties"].get("WOREDA_NAME") for f in feats)  # no synthetic woredas
+    assert all(f["properties"]["feature_type"] == "ogaden_admin_boundary" for f in feats)
+    assert all(f["geometry"]["type"] in ("Polygon", "MultiPolygon") for f in feats)
 
 
 @respx.mock
-async def test_hydrology_and_landcover_serve_bundled_full_sets():
+async def test_hydrology_serves_real_osm_rivers_only():
     async with httpx.AsyncClient() as client:
         hyd, hsrc = await ogaden.get_ogaden_hydrology(client, WEB_DIR)
-        lc, lsrc = await ogaden.get_ogaden_landcover(client, WEB_DIR)
-    assert hsrc == "bundled-snapshot" and lsrc == "bundled-snapshot"
+    assert hsrc == "bundled-snapshot"
     rivers = {f["properties"]["RIVER_NAME"] for f in hyd["features"] if f["properties"]["feature_type"] == "ogaden_river"}
-    assert any("Ganale" in r for r in rivers) and any("Shabelle" in r for r in rivers)
-    assert any(f["properties"]["feature_type"] == "ogaden_basin" for f in hyd["features"])
-    covers = {f["properties"]["LAND_COVER"] for f in lc["features"]}
-    assert {"Rainfed Crop Fields", "Irrigated Fields", "Water Bodies"} <= covers
-    assert all(f["properties"]["SOIL_TYPE"] for f in lc["features"])
+    # real OSM reaches from the official user dataset
+    assert {"Jubba River", "Webi Shabeelle", "Dawa River"} <= rivers
+    assert not any(f["properties"]["feature_type"] == "ogaden_basin" for f in hyd["features"])  # hulls banned
+    assert all(f["geometry"]["type"] in ("LineString", "MultiLineString") for f in hyd["features"])
+    assert all(f["properties"]["LENGTH_KM"] > 0 for f in hyd["features"])
+
+
+@respx.mock
+async def test_landcover_live_only_swialim_wfs():
+    sample = json.loads((Path(__file__).parent / "fixtures" / "swalim_landuse_sample.geojson").read_text())
+    respx.get(url__eq=SWALIM_LANDUSE_WFS).mock(return_value=httpx.Response(200, json=sample))
+    async with httpx.AsyncClient() as client:
+        lc, lsrc = await ogaden.get_ogaden_landcover(client, WEB_DIR)
+    assert lsrc == "swalim-wfs-live"
+    assert lc["features"][0]["properties"]["LAND_COVER"] == "Mangroves"
+    assert lc["features"][0]["geometry"]["type"] == "MultiPolygon"
+    assert "swalim" in json.dumps(lc).lower()
+
+
+@respx.mock
+async def test_landcover_refuses_synthetic_substitute_when_offline():
+    respx.get(url__eq=SWALIM_LANDUSE_WFS).mock(return_value=httpx.Response(503))
+    async with httpx.AsyncClient() as client:
+        with pytest.raises(RuntimeError, match="no bundled/synthetic substitute"):
+            await ogaden.get_ogaden_landcover(client, WEB_DIR)
 
 
 def _get(client: TestClient, path: str):
@@ -101,8 +124,11 @@ def test_ogaden_routes_served_under_api_v1():
     assert r.headers["X-Ogaden-Source"] == "bundled-snapshot"
     body = r.json()
     assert body["type"] == "FeatureCollection"
-    assert any(f["properties"].get("WOREDA_NAME") for f in body["features"])
+    assert {f["properties"]["ADMIN_LEVEL"] for f in body["features"]} == {2}  # real zones only
+    assert not any(f["properties"].get("WOREDA_NAME") for f in body["features"])
     r2 = _get(client, "/api/v1/ogaden/hydrology")
     assert r2.status_code == 200 and r2.headers["X-Ogaden-Source"] == "bundled-snapshot"
+    assert {f["geometry"]["type"] for f in r2.json()["features"]} <= {"LineString", "MultiLineString"}
+    respx.get(url__eq=SWALIM_LANDUSE_WFS).mock(return_value=httpx.Response(503))
     r3 = _get(client, "/api/v1/ogaden/landcover")
-    assert r3.status_code == 200 and any("SOIL_TYPE" in f["properties"] for f in r3.json()["features"])
+    assert r3.status_code == 502  # honest failure: no synthetic substitute permitted

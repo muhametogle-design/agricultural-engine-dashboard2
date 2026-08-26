@@ -39,6 +39,7 @@ OGADEN_DIR_NAME = "ogaden"
 _ZONE_MATCHES = (
     "jigjiga", "jijiga", "faafan", "jarar", "jaraar", "korahe", "qorahey",
     "gode", "doollo", "dollo", "shabelle", "nogob", "fiiq", "siti", "shinile",
+    "afder", "liben", "korahey",
     "erer", "awbare", "dobeweyn", "togotale", "somali",
 )
 
@@ -136,17 +137,21 @@ async def _resolve(
 
 
 _titles = {
-    "boundaries": "Ogaden / Somali Region — Admin 2 Zones & Admin 3 Woredas",
-    "hydrology": "Upstream Jubba & Shabelle — River Networks and Basin Extents",
-    "landcover": "Ogaden / Cross-border Land Cover & Soil Categories",
+    "boundaries": "Ogaden / Somali Region — Admin 2 Zones (official vector boundaries)",
+    "hydrology": "Upstream Jubba & Shabelle — Real River Networks (OSM)",
+    "landcover": "Cross-border Land Cover — official SWALIM land-use systems",
 }
 
 
 def _bundled_note(key: str) -> str:
     return {
-        "boundaries": "Bundled generalized zones + woredas (geoBoundaries unreachable).",
-        "hydrology": "Bundled generalized upstream river network (no open live source).",
-        "landcover": "Bundled generalized cross-border land cover / soil categories.",
+        "boundaries": ("Bundled official GADM 4.1 ETH ADM2 Somali-Region zones — real "
+                       "vector boundaries. Woredas (ADM3) are never synthesized: they are "
+                       "served live from geoBoundaries only when the network allows."),
+        "hydrology": ("Bundled real OpenStreetMap river reaches (Jubba / Webi Shabeelle / "
+                      "Dawa). Synthetic basin hulls were removed rather than approximated."),
+        "landcover": ("No bundled land cover: this layer is served live from the official "
+                      "FAO SWALIM land-use systems WFS only (no artificial substitutes)."),
     }[key]
 
 
@@ -163,7 +168,8 @@ async def _live_boundaries(client: httpx.AsyncClient):
         raise ValueError("no Somali Region zones matched in geoBoundaries ADM2")
     return ogaden, "geoboundaries-live", (
         "Live geoBoundaries gbOpen ETH/ADM2 zones filtered to the Somali Regional "
-        "State (Ogaden); Admin 3 woredas from the bundled verified snapshot."
+        "State (Ogaden). Only official vector boundaries are rendered; woredas come "
+        "exclusively from official ADM3 sources when reachable."
     )
 
 
@@ -185,9 +191,56 @@ async def get_ogaden_boundaries(client: httpx.AsyncClient, static_root: Path):
     return data, source
 
 
+SWALIM_LANDUSE_WFS = (
+    "https://spatial.faoswalim.org/geoserver/ows?service=wfs&version=1.0.0"
+    "&request=GetFeature&typename=geonode:som_landuse_system_faoswalim2007"
+    "&outputFormat=application/json&maxFeatures=50000"
+)
+
+
 async def get_ogaden_hydrology(client: httpx.AsyncClient, static_root: Path):
     return await _resolve("hydrology", client, static_root)
 
 
+async def _live_landcover(client: httpx.AsyncClient):
+    """Official SWALIM land-use systems (166 real vector polygons)."""
+    response = await client.get(SWALIM_LANDUSE_WFS, timeout=60.0)
+    response.raise_for_status()
+    payload = response.json()
+    if not isinstance(payload, dict) or payload.get("type") != "FeatureCollection":
+        raise ValueError("SWALIM land-use WFS response is not a FeatureCollection")
+    features = []
+    for f in payload.get("features", []):
+        props = f.get("properties") or {}
+        land_cover = props.get("land_cover") or props.get("LAND_COVER")
+        if not land_cover or not f.get("geometry"):
+            continue
+        features.append({
+            "type": "Feature",
+            "geometry": f["geometry"],
+            "properties": {
+                "feature_type": "ogaden_landcover",
+                "LAND_COVER": land_cover,
+                "LANDUSE": props.get("landuse"),
+                "REGION": "Somalia / cross-border systems (SWALIM 2007)",
+                "source_layer": "swalim_landuse_systems",
+            },
+        })
+    if not features:
+        raise ValueError("no land-use features returned")
+    return features, "swalim-wfs-live", (
+        "Live official FAO SWALIM land-use systems WFS "
+        "(geonode:som_landuse_system_faoswalim2007) — authentic vector polygons."
+    )
+
+
 async def get_ogaden_landcover(client: httpx.AsyncClient, static_root: Path):
-    return await _resolve("landcover", client, static_root)
+    data, source = await _resolve("landcover", client, static_root,
+                                  live_fetch=_live_landcover)
+    if source == "bundled-snapshot" and not data.get("features"):
+        # No synthetic substitute is permitted for this layer.
+        raise RuntimeError(
+            "Cross-border land cover requires the live SWALIM WFS "
+            "(no bundled/synthetic substitute exists by policy)."
+        )
+    return data, source

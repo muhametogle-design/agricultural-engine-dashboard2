@@ -136,9 +136,9 @@ async def test_service_merges_wfs_and_tolerates_layer_outages():
     async with httpx.AsyncClient() as client:
         data, source = await swalim_soil.get_swalim_soil_ph(client, SNAPSHOT)
         assert source == "official-wfs"
-        # national generalized base (7) + live WFS inset (1); base renders beneath
-        assert len(data["features"]) == 8
-        assert data["metadata"]["layers"] == {"national_base": 7, first: 1}
+        # national generalized base (18 real ADM1 regions) + live WFS inset (1)
+        assert len(data["features"]) == 19
+        assert data["metadata"]["layers"] == {"national_base": 18, first: 1}
         assert data["features"][0]["properties"]["source_layer"] == "national_base"
         assert data["features"][-1]["properties"]["source_layer"] == first
         assert len(data["metadata"]["ph_classes"]) == 7
@@ -155,7 +155,7 @@ async def test_service_falls_back_to_packaged_snapshot():
     async with httpx.AsyncClient() as client:
         data, source = await swalim_soil.get_swalim_soil_ph(client, SNAPSHOT)
         assert source == "static-fallback"
-        assert len(data["features"]) == 7  # packaged Somalia soil snapshot
+        assert len(data["features"]) == 18  # packaged snapshot: real GADM ADM1 region boundaries
         for feature in data["features"]:
             p = feature["properties"]
             assert isinstance(p["pH_VALUE"], float)
@@ -183,7 +183,7 @@ def test_soil_ph_route_proxies_official_wfs():
     body = r.json()
     assert body["type"] == "FeatureCollection"
     assert body["metadata"]["wfs_endpoint"] == SWALIM_WFS
-    assert len(body["features"]) == 14  # 7 national base + 1 WFS inset per mocked catalogue layer
+    assert len(body["features"]) == 25  # 18 national base regions + 1 WFS inset per mocked catalogue layer
     wfs_insets = [f for f in body["features"] if f["properties"]["source_layer"] != "national_base"]
     assert wfs_insets[0]["properties"]["PH_CLASS"] == "Neutral / Near Neutral"
 
@@ -196,7 +196,7 @@ def test_soil_ph_route_falls_back_and_supports_refresh():
     assert r.status_code == 200
     assert r.headers["X-SWALIM-Source"] == "static-fallback"
     body = r.json()
-    assert len(body["features"]) == 7
+    assert len(body["features"]) == 18
     assert all(f["properties"]["source_layer"] == "national_base" for f in body["features"])
     # ?refresh=true bypasses the cache and re-queries the (still down) WFS
     r2 = client.get("/api/v1/swalim/soil-ph?refresh=true")

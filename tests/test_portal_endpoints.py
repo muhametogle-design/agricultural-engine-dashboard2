@@ -5,7 +5,36 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+import json
+from pathlib import Path
+
+import httpx
+import pytest
+import respx
+from fastapi.testclient import TestClient
+
 from main import app
+
+import app.services.swalim as swalim_service
+import app.services.swalim_soil as swalim_soil_service
+import app.services.ogaden as ogaden_service
+
+
+@pytest.fixture(autouse=True)
+def _isolated_caches(tmp_path, monkeypatch):
+    """Runtime caches must never leak real (or stale synthetic) payloads across tests."""
+    import app.services.disk_cache as dc
+    for store in (swalim_service._CACHE, swalim_soil_service, ogaden_service):
+        getattr(store, "_MEMORY", getattr(store, "_CACHE", {})).clear() if hasattr(store, "_MEMORY") or hasattr(store, "_CACHE") else None
+    swalim_service._CACHE.clear()
+    if hasattr(swalim_soil_service, "_CACHE"):
+        swalim_soil_service._CACHE.clear()
+    ogaden_service._MEMORY.clear()
+    monkeypatch.setattr(dc, "CACHE_DIR", tmp_path)
+    yield
+    swalim_service._CACHE.clear()
+    ogaden_service._MEMORY.clear()
+
 
 client = TestClient(app)
 
@@ -50,12 +79,22 @@ def test_ogaden_boundaries_proxy():
     assert response.headers.get("x-ogaden-source")
 
 
-def test_swalim_land_cover_proxy():
-    """Land cover must be served through the proxy allow-list (live WFS or bundled fallback)."""
-    response = client.get("/api/v1/swalim/land_cover")
-    assert response.status_code == 200
+@respx.mock
+def test_swalim_land_cover_proxy_live_only():
+    """Land cover is served from the official SWALIM WFS only — no synthetic bundle exists.
 
-    data = response.json()
-    assert data.get("type") == "FeatureCollection"
-    assert len(data.get("features", [])) > 0
-    assert response.headers.get("x-swalim-source")
+    With the WFS unreachable the endpoint fails honestly (502) rather than
+    serving placeholder hexagons; when reachable it streams real vectors."""
+    respx.get(url__regex=r"spatial\.faoswalim\.org").mock(return_value=httpx.Response(503))
+    offline = client.get("/api/v1/swalim/land_cover")
+    assert offline.status_code == 502  # policy: no artificial substitute geometry
+
+    sample = json.loads(Path(__file__).parent / "fixtures" / "swalim_landuse_sample.geojson"
+                        .read_text() if False else (Path(__file__).parent / "fixtures" / "swalim_landuse_sample.geojson").read_text())
+    respx.get(url__regex=r"spatial\.faoswalim\.org").mock(return_value=httpx.Response(200, json=sample))
+    live = client.get("/api/v1/swalim/land_cover")
+    assert live.status_code == 200
+    data = live.json()
+    assert data["type"] == "FeatureCollection" and data["features"]
+    assert data["features"][0]["properties"].get("land_cover") == "Mangroves"
+    assert live.headers.get("x-swalim-source") == "official-wfs"

@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "source": "UNESCO IHP-WINS — Somalia geology original color coding (somalia.sld)",
+    "dataset": "Digitized Geological map of Somalia 1:1,500,000 — Abbate, Sagri & Sassi (1994)",
+    "license_note": "CC-BY-SA style file reproducing the original map colour-coding",
+    "usage": "unit_code -> original cartographic fill hex"
+  },
+  "unit_colors": {
+    "Dg": "#ff968c", "Ea": "#c78523", "Ek": "#b3cf97", "El": "#c9634c", "Et": "#dbc6aa",
+    "Ja": "#37c5d5", "JB": "#42809f", "Jc": "#1595bc", "Jg": "#33b6c5", "Ju": "#2ebc9b",
+    "JA": "#1388ac", "Ka": "#11ad1b", "Kb": "#88cf8b", "KBW": "#9ecea4", "KF": "#0e9217",
+    "KM": "#b0e5b6", "KMA": "#8ee1ae", "Kt": "#0a6710", "KW": "#b0e5b6", "Ky": "#afd981",
+    "Kα": "#f00c08", "m": "#4acec7", "Ma": "#ff968c", "Md": "#f8bc32", "Mdc": "#fcc032",
+    "Mh": "#eee3d6", "Mm": "#4acec7", "Ms": "#eee3d6", "Mµ": "#4292aa", "Mβ": "#ff968c",
+    "Oc": "#ff968c", "Od": "#fcc032", "Oh": "#e7b9b7", "OMbl": "#e1cf7d", "OMI": "#e1cf7d",
+    "OMmb": "#e1cf7d", "Pb": "#f6ea69", "Pl": "#fff36d", "Pβ": "#c2222a", "q": "#b9c7a6",
+    "Q": "#e9ebc3", "Qa": "#cfdeb3", "Qad": "#60ce7a", "Qasc": "#e9ebc3", "Qc": "#fff3a6",
+    "Qcl": "#b3e8a5", "Qd": "#fff3a6", "Qgy": "#fff3a6", "Qps": "#fff3a6", "Qsd": "#cfdeb3",
+    "Qws": "#fff3a6", "Tα": "#cb3507", "XA": "#b1bdb0", "XM": "#156d20", "Xβ": "#cfdeb3",
+    "Xγ": "#7d8696", "Xσ": "#452b09", "XI": "#ffaeeb", "γ": "#eb0918", "Xα": "#452b09"
+  }
+}

@@ -11,13 +11,14 @@ from fastapi.staticfiles import StaticFiles
 
 from app import __version__
 from app.api.deps import get_settings
-from app.api.routes import analysis, auth, clients, environmental, fields, health, lab, plans, swalim, ves
+from app.api.routes import analysis, auth, clients, environmental, fields, health, lab, ogaden, plans, swalim, ves
 from app.core.errors import AppError
 from app.core.logging import configure_logging, get_logger
 from app.db.pool import close_pool, create_pool
 from app.engines.terrain import build_terrain_provider
 from app.services.http import create_async_client
 from app.services.hwsd import HWSDService
+from app.services.geology_import import import_geology
 
 log = get_logger(__name__)
 
@@ -27,15 +28,27 @@ async def lifespan(app: FastAPI):
     configure_logging()
     settings = get_settings()
     app.state.settings = settings
-    app.state.pool = await create_pool(settings.database_dsn)
+    try:
+        app.state.pool = await create_pool(settings.database_dsn)
+    except Exception as exc:  # DB-optional startup: the GIS portal / proxies must
+        # still serve via `uvicorn main:app` when Postgres is unreachable.
+        app.state.pool = None
+        log.warning("Postgres pool unavailable (%s); DB-backed endpoints degraded, spatial portal fully operational", exc)
     app.state.http_client = create_async_client(settings.http)
     app.state.terrain = build_terrain_provider(settings.dem_path)
     app.state.hwsd = HWSDService(settings.hwsd_raster, settings.hwsd_attrs)
+    try:  # complete the Abbate 1:1.5M geology vectors the moment the archive lands in the repo
+        _geo = import_geology()
+        if _geo:
+            log.info("official geology vectors imported -> %s", _geo.name)
+    except Exception as exc:
+        log.warning("geology auto-import skipped: %s", exc)
     log.info("agri-dss %s up; terrain=%s hwsd=%s", __version__,
              type(app.state.terrain).__name__, app.state.hwsd.available)
     yield
     await app.state.http_client.aclose()
-    await close_pool(app.state.pool)
+    if app.state.pool is not None:
+        await close_pool(app.state.pool)
 
 
 LANDING_HTML = """<!DOCTYPE html>
@@ -93,7 +106,8 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     api_prefix = "/api/v1"
     for r in (auth.router, clients.router, fields.router, environmental.router,
-              ves.router, analysis.router, plans.router, lab.router, swalim.router):
+              ves.router, analysis.router, plans.router, lab.router, swalim.router,
+              ogaden.router):
         app.include_router(r, prefix=api_prefix)
 
     @app.get("/api")
@@ -163,6 +177,7 @@ def create_app() -> FastAPI:
         "fao_soil_ph.geojson": "application/geo+json",
         "soil_data.geojson": "application/geo+json",
         "soil_style.json": "application/json",
+        "somalia_geology_colors.json": "application/json",
     }
 
     @app.get("/{asset_name}", include_in_schema=False)
@@ -170,9 +185,16 @@ def create_app() -> FastAPI:
         media_type = abaar_assets.get(asset_name)
         if media_type is None:
             raise HTTPException(status_code=404)
-        return FileResponse(web_dir / asset_name, media_type=media_type)
+        asset = web_dir / asset_name
+        if not asset.is_file():
+            # e.g. somalia_geology.geojson until the official archive is imported
+            raise HTTPException(status_code=404, detail="asset not yet available")
+        return FileResponse(asset, media_type=media_type)
 
     app.mount("/vendor", StaticFiles(directory=web_dir / "vendor"), name="vendor")
+    # Server-side spatial payload cache (proxied GeoJSON drops land here).
+    (web_dir / "static" / "data" / "cache").mkdir(parents=True, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=web_dir / "static"), name="static")
     app.mount("/web", StaticFiles(directory=web_dir), name="web")
 
     return app
